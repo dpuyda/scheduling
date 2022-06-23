@@ -20,19 +20,6 @@ class SchedulerImpl;
 constexpr int kDefaultPriority = 0;
 
 /**
- * A task that can be scheduled using the scheduler.
- */
-template <typename ResultType, typename... Parameters>
-using Task = std::function<ResultType(Parameters...)>;
-
-/**
- * A callback that is called by the scheduler to notify the caller that the task
- * is complete and pass the task result to the caller.
- */
-template <typename ResultType>
-using Callback = std::function<void(ResultType)>;
-
-/**
  * Allows to cancel a task scheduled using the scheduler.
  */
 class CancellationToken {
@@ -63,17 +50,16 @@ class CancellationToken {
 
 namespace internal {
 struct PrioritizedTask {
-  PrioritizedTask(const int priority, std::function<void()> task)
-      : priority(priority), task(std::move(task)) {}
-  int priority;
+  PrioritizedTask(std::function<void()> task, const int priority)
+      : task(std::move(task)), priority(priority) {}
   std::function<void()> task;
+  int priority;
 };
 
 class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
  public:
   explicit SchedulerImpl(const size_t max_threads_count) : disposing_(false) {
     task_threads_.resize(max_threads_count);
-
     available_threads_.resize(max_threads_count);
     std::iota(available_threads_.rbegin(), available_threads_.rend(), 0);
   }
@@ -85,7 +71,7 @@ class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
 
   ~SchedulerImpl() {
     {
-      std::unique_lock lock(mutex_);
+      std::lock_guard lock(mutex_);
       disposing_ = true;
     }
 
@@ -96,27 +82,23 @@ class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
     }
   }
 
-  template <typename ResultType, typename... Args,
-            typename TaskType = Task<ResultType, Args...>,
-            typename CallbackType = Callback<ResultType>,
-            typename TaskTypeDefinition = std::enable_if<
-                std::is_same<TaskType, Task<ResultType, Args...>>::value>,
-            typename CallbackTypeDefinition = std::enable_if<
-                std::is_same<CallbackType, Callback<ResultType>>::value>>
+  template <typename TaskType, typename CallbackType, typename... Args>
   CancellationToken Schedule(const int priority, TaskType&& task,
                              CallbackType&& callback, Args&&... args) {
     auto pending_task = std::make_shared<PrioritizedTask>(
-        priority, [this, task = std::forward<TaskType>(task),
-                   callback = std::forward<CallbackType>(callback),
-                   ... args = std::forward<Args>(args)]() mutable {
-          if constexpr (std::is_void<ResultType>::value) {
+        [this, task = std::forward<TaskType>(task),
+         callback = std::forward<CallbackType>(callback),
+         ... args = std::forward<Args>(args)]() mutable {
+          using ResultType = std::invoke_result_t<TaskType, Args...>;
+          if constexpr (std::is_void_v<ResultType>) {
             task(std::forward<Args>(args)...);
             callback();
           } else {
             auto result = task(std::forward<Args>(args)...);
             callback(std::move(result));
           }
-        });
+        },
+        priority);
 
     if (task_threads_.empty()) {
       pending_task->task();
@@ -129,12 +111,11 @@ class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
       return CancellationToken([] { return false; });
     }
 
-    const auto it = std::upper_bound(
-        pending_tasks_.begin(), pending_tasks_.end(), pending_task,
-        [](const std::shared_ptr<PrioritizedTask>& lhs,
-           const std::shared_ptr<PrioritizedTask>& rhs) {
-          return lhs->priority > rhs->priority;
-        });
+    const auto it =
+        std::upper_bound(pending_tasks_.begin(), pending_tasks_.end(),
+                         pending_task, [](const auto& lhs, const auto& rhs) {
+                           return lhs->priority > rhs->priority;
+                         });
 
     pending_tasks_.insert(it, pending_task);
 
@@ -144,7 +125,7 @@ class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
       StartThread(thread_index);
     }
 
-    std::weak_ptr weak_scheduler = shared_from_this();
+    auto weak_scheduler = weak_from_this();
 
     return CancellationToken([weak_scheduler = std::move(weak_scheduler),
                               task = std::move(pending_task)] {
@@ -157,16 +138,16 @@ class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
 
  private:
   void StartThread(const size_t thread_index) {
-    auto run = [this](const size_t thread_index) {
+    auto run = [this](const size_t new_thread_index) {
       while (true) {
         std::unique_lock lock(mutex_);
 
         if (pending_tasks_.empty()) {
-          available_threads_.push_back(thread_index);
+          available_threads_.push_back(new_thread_index);
           return;
         }
 
-        const auto pending_task = std::move(pending_tasks_.front());
+        const auto pending_task = pending_tasks_.front();
         pending_tasks_.pop_front();
 
         lock.unlock();
@@ -187,12 +168,7 @@ class SchedulerImpl : public std::enable_shared_from_this<SchedulerImpl> {
 
   bool Cancel(const std::shared_ptr<PrioritizedTask>& pending_task) {
     std::lock_guard lock(mutex_);
-    const auto it = std::ranges::find(pending_tasks_, pending_task);
-    if (it == pending_tasks_.end()) {
-      return false;
-    }
-    pending_tasks_.erase(it);
-    return true;
+    return std::erase(pending_tasks_, pending_task) != 0;
   }
 
   std::mutex mutex_;
@@ -240,18 +216,12 @@ class Scheduler {
    *
    * @return The cancellation token allowing to cancel the task.
    */
-  template <typename ResultType, typename... Args,
-            typename TaskType = Task<ResultType, Args...>,
-            typename CallbackType = Callback<ResultType>,
-            typename TaskTypeDefinition = std::enable_if<
-                std::is_same<TaskType, Task<ResultType, Args...>>::value>,
-            typename CallbackTypeDefinition = std::enable_if<
-                std::is_same<CallbackType, Callback<ResultType>>::value>>
+  template <typename TaskType, typename CallbackType, typename... Args>
   CancellationToken Schedule(TaskType&& task, CallbackType&& callback,
                              Args&&... args) {
-    return impl_->Schedule<ResultType>(
-        kDefaultPriority, std::forward<TaskType>(task),
-        std::forward<CallbackType>(callback), std::forward<Args>(args)...);
+    return impl_->Schedule(kDefaultPriority, std::forward<TaskType>(task),
+                           std::forward<CallbackType>(callback),
+                           std::forward<Args>(args)...);
   }
 
   /**
@@ -272,18 +242,12 @@ class Scheduler {
    *
    * @return The cancellation token allowing to cancel the task.
    */
-  template <typename ResultType, typename... Args,
-            typename TaskType = Task<ResultType, Args...>,
-            typename CallbackType = Callback<ResultType>,
-            typename TaskTypeDefinition = std::enable_if<
-                std::is_same<TaskType, Task<ResultType, Args...>>::value>,
-            typename CallbackTypeDefinition = std::enable_if<
-                std::is_same<CallbackType, Callback<ResultType>>::value>>
+  template <typename TaskType, typename CallbackType, typename... Args>
   CancellationToken Schedule(const int priority, TaskType&& task,
                              CallbackType&& callback, Args&&... args) {
-    return impl_->Schedule<ResultType>(priority, std::forward<TaskType>(task),
-                                       std::forward<CallbackType>(callback),
-                                       std::forward<Args>(args)...);
+    return impl_->Schedule(priority, std::forward<TaskType>(task),
+                           std::forward<CallbackType>(callback),
+                           std::forward<Args>(args)...);
   }
 
  private:

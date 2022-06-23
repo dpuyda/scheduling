@@ -20,7 +20,7 @@ TEST(SchedulerTest, ExecuteTask) {
       is_callback_called.notify_one();
     };
 
-    scheduler.Schedule<void>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
 
     is_callback_called.wait(false);
     EXPECT_TRUE(is_task_executed);
@@ -38,7 +38,7 @@ TEST(SchedulerTest, ExecuteTask) {
       actual.notify_one();
     };
 
-    scheduler.Schedule<int>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
 
     actual.wait(0);
     EXPECT_EQ(actual, expected);
@@ -56,7 +56,7 @@ TEST(SchedulerTest, ExecuteTask) {
     };
 
     constexpr auto a = 1, b = 2;
-    scheduler.Schedule<int>(std::move(task), std::move(callback), a, b);
+    scheduler.Schedule(std::move(task), std::move(callback), a, b);
 
     actual.wait(0);
     EXPECT_EQ(actual, a + b);
@@ -77,7 +77,7 @@ TEST(SchedulerTest, WaitForCompletionWhenDestroyed) {
       actual.notify_one();
     };
 
-    scheduler.Schedule<int>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
   }
 
   actual.wait(0);
@@ -92,10 +92,10 @@ TEST(SchedulerTest, CancelTaskNotStarted) {
     scheduling::Scheduler scheduler(max_threads_count);
 
     std::atomic release_first_task = false;
-    scheduler.Schedule<void>([&] { release_first_task.wait(false); }, [] {});
+    scheduler.Schedule([&] { release_first_task.wait(false); }, [] {});
 
     const auto cancellation_token =
-        scheduler.Schedule<void>([] {}, [&] { is_canceled = false; });
+        scheduler.Schedule([] {}, [&] { is_canceled = false; });
 
     EXPECT_TRUE(cancellation_token.Cancel());
 
@@ -123,7 +123,7 @@ TEST(SchedulerTest, CancelTaskStarted) {
   };
 
   const auto cancellation_token =
-      scheduler.Schedule<void>(std::move(task), std::move(callback));
+      scheduler.Schedule(std::move(task), std::move(callback));
 
   is_task_started.wait(false);
 
@@ -140,7 +140,7 @@ TEST(SchedulerTest, CancelSchedulerDestroyed) {
   auto callback = [] {};
 
   const auto cancellation_token =
-      scheduler->Schedule<void>(std::move(task), std::move(callback));
+      scheduler->Schedule(std::move(task), std::move(callback));
 
   scheduler = nullptr;
 
@@ -161,7 +161,7 @@ TEST(SchedulerTest, TaskAndCallbackOnSameThread) {
       callback_thread_id = std::this_thread::get_id();
     };
 
-    scheduler.Schedule<void>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
   }
 
   EXPECT_EQ(task_thread_id, callback_thread_id);
@@ -170,10 +170,11 @@ TEST(SchedulerTest, TaskAndCallbackOnSameThread) {
 
 TEST(SchedulerTest, UseDifferentThreads) {
   std::vector<std::thread::id> thread_id(2);
-  std::vector<std::atomic<bool>> task_started_flags(thread_id.size());
-  std::vector<std::atomic<bool>> release_task_flags(thread_id.size());
 
   {
+    std::vector<std::atomic<bool>> task_started_flags(thread_id.size());
+    std::vector<std::atomic<bool>> release_task_flags(thread_id.size());
+
     constexpr auto max_threads_count = 2;
     scheduling::Scheduler scheduler(max_threads_count);
 
@@ -187,7 +188,7 @@ TEST(SchedulerTest, UseDifferentThreads) {
 
       auto callback = [] {};
 
-      scheduler.Schedule<void>(std::move(task), std::move(callback));
+      scheduler.Schedule(std::move(task), std::move(callback));
     }
 
     for (auto& flag : task_started_flags) {
@@ -213,15 +214,15 @@ TEST(SchedulerTest, ReuseThread) {
     std::atomic release_first_task = false;
     const auto callback = [] {};
 
-    scheduler.Schedule<void>(
+    scheduler.Schedule(
         [&] {
           release_first_task.wait(false);
           thread_id[0] = std::this_thread::get_id();
         },
         callback);
 
-    scheduler.Schedule<void>([&] { thread_id[1] = std::this_thread::get_id(); },
-                             callback);
+    scheduler.Schedule([&] { thread_id[1] = std::this_thread::get_id(); },
+                       callback);
 
     release_first_task = true;
     release_first_task.notify_one();
@@ -241,14 +242,14 @@ TEST(SchedulerTest, Priority) {
     std::atomic release_first_task = false;
     const auto callback = [] {};
 
-    scheduler.Schedule<void>(
+    scheduler.Schedule(
         scheduling::kDefaultPriority, [&] { release_first_task.wait(false); },
         callback);
 
-    scheduler.Schedule<void>(
+    scheduler.Schedule(
         scheduling::kDefaultPriority, [&] { tasks_id.push_back(0); }, callback);
 
-    scheduler.Schedule<void>(
+    scheduler.Schedule(
         scheduling::kDefaultPriority + 1, [&] { tasks_id.push_back(1); },
         callback);
 
@@ -269,9 +270,9 @@ TEST(SchedulerTest, TaskOrderSamePriority) {
     std::atomic release_first_task = false;
     const auto callback = [] {};
 
-    scheduler.Schedule<void>([&] { release_first_task.wait(false); }, callback);
-    scheduler.Schedule<void>([&] { tasks_id.push_back(0); }, callback);
-    scheduler.Schedule<void>([&] { tasks_id.push_back(1); }, callback);
+    scheduler.Schedule([&] { release_first_task.wait(false); }, callback);
+    scheduler.Schedule([&] { tasks_id.push_back(0); }, callback);
+    scheduler.Schedule([&] { tasks_id.push_back(1); }, callback);
 
     release_first_task = true;
     release_first_task.notify_one();
@@ -291,7 +292,7 @@ TEST(SchedulerTest, ZeroThreadsCount) {
   auto callback = [&] { callback_thread_id = std::this_thread::get_id(); };
 
   const auto cancellation_token =
-      scheduler.Schedule<void>(std::move(task), std::move(callback));
+      scheduler.Schedule(std::move(task), std::move(callback));
 
   EXPECT_EQ(task_thread_id, std::this_thread::get_id());
   EXPECT_EQ(callback_thread_id, std::this_thread::get_id());

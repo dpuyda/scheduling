@@ -14,7 +14,7 @@ int main() {
 
     auto callback = [] { std::cout << "The task is completed!" << std::endl; };
 
-    scheduler.Schedule<void>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
   }
 
   // Schedule a function without parameters that returns `int`:
@@ -26,7 +26,7 @@ int main() {
 
     auto callback = [](const int result) { std::cout << result << std::endl; };
 
-    scheduler.Schedule<int>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
   }
 
   // Schedule a function that calculates the sum of two integers:
@@ -35,7 +35,7 @@ int main() {
 
     auto callback = [](const int sum) { std::cout << sum << std::endl; };
 
-    scheduler.Schedule<int>(std::move(task), std::move(callback), 1, 2);
+    scheduler.Schedule(std::move(task), std::move(callback), 1, 2);
   }
 
   // Schedule a function with a given priority:
@@ -49,7 +49,7 @@ int main() {
 
     auto callback = [](const int result) { std::cout << result << std::endl; };
 
-    scheduler.Schedule<int>(priority, std::move(task), std::move(callback));
+    scheduler.Schedule(priority, std::move(task), std::move(callback));
   }
 
   // Cancel a task if it has not started yet:
@@ -62,11 +62,9 @@ int main() {
     auto callback = [](const int result) { std::cout << result << std::endl; };
 
     const auto cancellation_token =
-        scheduler.Schedule<int>(std::move(task), std::move(callback));
+        scheduler.Schedule(std::move(task), std::move(callback));
 
-    const auto is_canceled = cancellation_token.Cancel();
-
-    if (is_canceled) {
+    if (const auto is_canceled = cancellation_token.Cancel(); is_canceled) {
       std::cout << "The task is canceled successfully!" << std::endl;
     } else {
       std::cout << "The task cannot be canceled" << std::endl;

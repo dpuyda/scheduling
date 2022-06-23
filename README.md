@@ -30,25 +30,25 @@ To schedule a function without parameters that returns `void`:
 
 ```cpp
 auto task = [] {
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 };
 
 auto callback = [] { std::cout << "The task is completed!" << std::endl; };
 
-scheduler.Schedule<void>(std::move(task), std::move(callback));
+scheduler.Schedule(std::move(task), std::move(callback));
 ```
 
 To schedule a function without parameters that returns `int`:
 
 ```cpp
 auto task = [] {
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  return 42;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    return 42;
 };
 
 auto callback = [](const int result) { std::cout << result << std::endl; };
 
-scheduler.Schedule<int>(std::move(task), std::move(callback));
+scheduler.Schedule(std::move(task), std::move(callback));
 ```
 
 To schedule a function that calculates the sum of two integers:
@@ -58,7 +58,7 @@ auto task = [](const int a, const int b) { return a + b; };
 
 auto callback = [](const int sum) { std::cout << sum << std::endl; };
 
-scheduler.Schedule<int>(std::move(task), std::move(callback), 1, 2);
+scheduler.Schedule(std::move(task), std::move(callback), 1, 2);
 ```
 
 To schedule a function with a given priority:
@@ -67,13 +67,13 @@ To schedule a function with a given priority:
 constexpr auto priority = scheduling::kDefaultPriority + 1;
 
 auto task = [] {
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-  return 42;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    return 42;
 };
 
 auto callback = [](const int result) { std::cout << result << std::endl; };
 
-scheduler.Schedule<int>(priority, std::move(task), std::move(callback));
+scheduler.Schedule(priority, std::move(task), std::move(callback));
 ```
 
 > *Note: The user code has to make sure that there is no thread starvation for
@@ -86,7 +86,7 @@ To cancel a task if it has not started yet:
 
 ```cpp
 const auto cancellation_token =
-  scheduler.Schedule<int>(std::move(task), std::move(callback));
+    scheduler.Schedule(std::move(task), std::move(callback));
 
 const auto is_canceled = cancellation_token.Cancel();
 ```
@@ -117,9 +117,7 @@ to this folder:
 
 # C++ standard
 
-`Scheduler` requires C\++20. If you need to compile it using C++17, 14 or 11,
-it is easy to update [scheduler.h](include/scheduling/scheduler.h) to suit your
-needs.
+`Scheduler` requires C\++20.
 
 # License
 
