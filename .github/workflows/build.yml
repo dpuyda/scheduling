@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '*'
+
+env:
+  BUILD_NUMBER: ${{github.run_number}}
+
+jobs:
+  build:
+    name: ${{matrix.name}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu GCC
+            os: ubuntu-latest
+            compiler: gcc-13
+          - name: Ubuntu Clang
+            os: ubuntu-latest
+            compiler: llvm
+          - name: Windows MSVC
+            os: windows-latest
+            compiler: msvc
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Cpp
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: ${{matrix.compiler}}
+
+    - name: Build
+      run: ./scripts/build.sh
+      shell: bash
