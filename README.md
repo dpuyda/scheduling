@@ -256,9 +256,9 @@ CPU Caches:
 
 ## Fibonacci numbers
 
-To benchmark running async tasks using the `ThreadPool` class, write a simple
-recursive function to calculate Fibonacci numbers without memoization similarly
-to Taskflow Fibonacci examples.
+To benchmark running async tasks using the `ThreadPool` class, we use the
+Taskflow [example](https://github.com/taskflow/taskflow/blob/9616467dd6e6f47f38c6aa39508fd51bf487b876/examples/fibonacci.cpp)
+to calculate Fibonacci numbers recursively without memoization.
 
 The charts below demonstrate comparison between the two libraries:
 
@@ -296,9 +296,10 @@ taskflow/fibonacci/33         2540 ms         1734 ms            1
 
 ## Linear chain
 
-To benchmark the simplest example of a task graph where all tasks are executed
-sequentially, create a task graph consisting of a specified number of tasks,
-executed one after another, each task incrementing an integer.
+To benchmark the simplest example of a task graph, we use the Taskflow
+[linear chain](https://github.com/taskflow/taskflow/blob/9616467dd6e6f47f38c6aa39508fd51bf487b876/benchmarks/linear_chain/taskflow.cpp)
+benchmark. In this benchmark, we create a task graph where all tasks are
+executed sequentially, each task incrementing an integer.
 
 The charts below demonstrate comparison between the two libraries:
 
@@ -328,8 +329,8 @@ taskflow/linear_chain/33554432         8137 ms         7219 ms            1
 
 ## Matrix multiplication
 
-To benchmark a more involved example of a task graph, write an example of
-asynchronous matrix multiplication similarly to Taskflow matrix multiplication
+To benchmark a more involved example of a task graph, we use the Taskflow
+[matrix multiplication](https://github.com/taskflow/taskflow/blob/9616467dd6e6f47f38c6aa39508fd51bf487b876/benchmarks/matrix_multiplication/taskflow.cpp)
 benchmark.
 
 The charts below demonstrate comparison between the two libraries:
