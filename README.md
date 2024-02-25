@@ -27,6 +27,12 @@ of Scheduling is less than 500 lines.
     * [Tasks](#tasks)
 * [References](#references)
 
+Below are some GitHub projects related to task graphs in which you may also be
+interested:
+
+* [Taskflow](https://github.com/taskflow/taskflow)
+* [CGraph](https://github.com/ChunelFeng/CGraph)
+
 # Examples
 
 We start with examples demonstrating how to run async tasks and build task
