@@ -9,6 +9,9 @@
 
 namespace scheduling {
 namespace internal {
+constexpr auto kExecuted = 1;
+constexpr auto kCancelled = 2;
+
 template <typename T>
   requires std::is_pointer_v<T>
 class Array {
@@ -172,24 +175,35 @@ class Task {
                                    TaskType, std::function<void()>>>>
   explicit Task(TaskType&& func) : func_{std::forward<TaskType>(func)} {}
 
-  Task(const Task& other) : func_{other.func_}, next_{other.next_} {
-    predecessors_.store(other.predecessors_);
+  Task(const Task& other)
+      : total_predecessors_{other.total_predecessors_},
+        func_{other.func_},
+        next_{other.next_} {
+    remaining_predecessors_.store(other.remaining_predecessors_);
+    cancellation_flags_.store(other.cancellation_flags_);
   }
 
   Task(Task&& other) noexcept
-      : func_{std::move(other.func_)}, next_{std::move(other.next_)} {
-    predecessors_.store(other.predecessors_);
+      : total_predecessors_{other.total_predecessors_},
+        func_{std::move(other.func_)},
+        next_{std::move(other.next_)} {
+    remaining_predecessors_.store(other.remaining_predecessors_);
+    cancellation_flags_.store(other.cancellation_flags_);
   }
 
   Task& operator=(const Task& other) {
-    predecessors_.store(other.predecessors_);
+    total_predecessors_ = other.total_predecessors_;
+    remaining_predecessors_.store(other.remaining_predecessors_);
+    cancellation_flags_.store(other.cancellation_flags_);
     func_ = other.func_;
     next_ = other.next_;
     return *this;
   }
 
   Task& operator=(Task&& other) noexcept {
-    predecessors_.store(other.predecessors_);
+    total_predecessors_ = other.total_predecessors_;
+    remaining_predecessors_.store(other.remaining_predecessors_);
+    cancellation_flags_.store(other.cancellation_flags_);
     func_ = std::move(other.func_);
     next_ = std::move(other.next_);
     return *this;
@@ -205,7 +219,8 @@ class Task {
    */
   void Succeed(Task* task) {
     task->next_.push_back(this);
-    ++predecessors_;
+    ++total_predecessors_;
+    ++remaining_predecessors_;
   }
 
   /**
@@ -217,7 +232,8 @@ class Task {
   template <typename... TasksType>
   void Succeed(Task* task, const TasksType&... tasks) {
     task->next_.push_back(this);
-    ++predecessors_;
+    ++total_predecessors_;
+    ++remaining_predecessors_;
     Succeed(tasks...);
   }
 
@@ -228,7 +244,8 @@ class Task {
    */
   void Precede(Task* task) {
     next_.push_back(task);
-    ++task->predecessors_;
+    ++task->total_predecessors_;
+    ++task->remaining_predecessors_;
   }
 
   /**
@@ -239,25 +256,44 @@ class Task {
   template <typename... TasksType>
   void Precede(Task* task, const TasksType&... tasks) {
     next_.push_back(task);
-    ++task->predecessors_;
+    ++task->total_predecessors_;
+    ++task->remaining_predecessors_;
     Precede(tasks...);
   }
 
   /**
-   * \brief Attempts to cancel the task.
+   * \brief Cancels the task.
    *
-   * A task can be cancelled only if it has not started yet. If the task is
-   * cancelled, the task and its successors are not executed.
+   * Cancelling a task never fails. When `false` is returned, it means that the
+   * task was already executed or has to be executed at least once after the
+   * cancellation. When a task is cancelled and will not be executed anymore,
+   * its successors also will not be executed. Call `Reset` to undo
+   * cancellation.
    *
-   * \return `true` if the task is cancelled, `false` otherwise.
+   * \see Reset
+   *
+   * \return `false` if the task was already executed or has to be executed once
+   * after the cancellation, `true` otherwise.
    */
-  bool Cancel() { return !cancelled_.test_and_set(); }
+  bool Cancel() {
+    return !(cancellation_flags_.fetch_or(internal::kCancelled) &
+             internal::kExecuted);
+  }
+
+  /**
+   * \brief Clears cancellation flags.
+   *
+   * Call `Reset` to undo task cancellation.
+   *
+   * \see Cancel
+   */
+  void Reset() { cancellation_flags_.store(0); }
 
  private:
   friend class ThreadPool;
   bool delete_{false}, is_root_{false};
-  std::atomic_flag cancelled_;
-  std::atomic<int> predecessors_;
+  int total_predecessors_{0};
+  std::atomic<int> remaining_predecessors_{0}, cancellation_flags_{0};
   std::function<void()> func_;
   std::vector<Task*> next_;
 };
@@ -358,7 +394,7 @@ class ThreadPool {
   template <typename TasksType>
   void Submit(TasksType& tasks) {
     for (auto& task : tasks) {
-      task.is_root_ = task.predecessors_ == 0;
+      task.is_root_ = task.total_predecessors_ == 0;
     }
     for (auto& task : tasks) {
       if (task.is_root_) {
@@ -404,20 +440,25 @@ class ThreadPool {
  private:
   void Run(const unsigned i) {
     index_ = i;
-    for (;;) {
-      tasks_count_.wait(0);
+    for (auto attempts = 0;;) {
+      if (constexpr auto max_attempts = 100; ++attempts > max_attempts) {
+        tasks_count_.wait(0);
+      }
       if (stop_.test()) {
         return;
       }
       if (auto* task = GetTask()) {
         Execute(task);
+        attempts = 0;
       }
     }
   }
 
   void Execute(Task* task) {
     for (Task* next = nullptr; task; next = nullptr) {
-      if (task->cancelled_.test_and_set()) {
+      task->remaining_predecessors_.store(task->total_predecessors_);
+      if (task->cancellation_flags_.fetch_or(internal::kExecuted) &
+          internal::kCancelled) {
         break;
       }
       if (task->func_) {
@@ -425,13 +466,13 @@ class ThreadPool {
       }
       auto it = task->next_.begin();
       for (; it != task->next_.end(); ++it) {
-        if ((*it)->predecessors_.fetch_sub(1) == 1) {
+        if ((*it)->remaining_predecessors_.fetch_sub(1) == 1) {
           next = *it++;
           break;
         }
       }
       for (; it != task->next_.end(); ++it) {
-        if ((*it)->predecessors_.fetch_sub(1) == 1) {
+        if ((*it)->remaining_predecessors_.fetch_sub(1) == 1) {
           Submit(*it);
         }
       }
