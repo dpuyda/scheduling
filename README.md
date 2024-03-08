@@ -66,7 +66,7 @@ When the `ThreadPool` instance is created, submit a task. For example:
 ```cpp
 thread_pool.Submit([] {
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  std::cout << "Completed!" << std::endl;
+  std::cout << "Completed" << std::endl;
 });
 ```
 A task is a function that does not accept arguments and returns `void`. Use
@@ -228,15 +228,26 @@ d.Precede(&c, &d);
 
 ## Cancel a task
 
-To cancel a task, use `Task::Cancel`. A task can be cancelled only if it has
-not started yet. If a task is cancelled, the task and its successors are not
-executed. For example:
+To cancel a task, call `Task::Cancel`.
+
+Canceling a task never fails. If `Task::Cancel` returns `false`, this means that
+the task was already executed or has to be executed at least once after the
+cancellation. When a task is cancelled and will not be executed anymore, its
+successors also will not be executed.
+
+For example:
 ```cpp
 scheduling::Task task;
 thread_pool.Submit(&task);
 if (task.Cancel()) {
-  std::cout << "Cancelled!" << std::endl;
+  std::cout << "The task will not be executed" << std::endl;
 }
+```
+
+To undo cancellation, call `Task::Reset`:
+
+```cpp
+task.Reset();
 ```
 
 # Benchmarks
@@ -319,12 +330,12 @@ Below is a sample output of Google Benchmark:
 ---------------------------------------------------------------------------
 Benchmark                                 Time             CPU   Iterations
 ---------------------------------------------------------------------------
-scheduling/linear_chain/1048576         121 ms         99.0 ms            6
-scheduling/linear_chain/2097152         248 ms          203 ms            3
-scheduling/linear_chain/4194304         486 ms          398 ms            2
-scheduling/linear_chain/8388608         979 ms          812 ms            1
-scheduling/linear_chain/16777216       1992 ms         1641 ms            1
-scheduling/linear_chain/33554432       4243 ms         3484 ms            1
+scheduling/linear_chain/1048576         156 ms          116 ms            5
+scheduling/linear_chain/2097152         297 ms          229 ms            3
+scheduling/linear_chain/4194304         519 ms          391 ms            2
+scheduling/linear_chain/8388608        1064 ms          828 ms            1
+scheduling/linear_chain/16777216       2173 ms         1688 ms            1
+scheduling/linear_chain/33554432       4431 ms         3453 ms            1
 taskflow/linear_chain/1048576           158 ms          125 ms            6
 taskflow/linear_chain/2097152           314 ms          258 ms            2
 taskflow/linear_chain/4194304           875 ms          750 ms            1

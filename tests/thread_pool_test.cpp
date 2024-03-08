@@ -177,6 +177,23 @@ TEST(ThreadPoolTest, MatrixMultiplication) {
   }
 }
 
+TEST(ThreadPoolTest, ResubmitGraph) {
+  auto counter = 0;
+  constexpr auto repeat_count = 1'000'000;
+  ThreadPool thread_pool;
+  std::vector<Task> tasks(32);
+  tasks[0] = Task([&] { ++counter; });
+  for (auto i = tasks.begin(), j = std::next(i); j != tasks.end(); ++i, ++j) {
+    *j = Task([&] { ++counter; });
+    j->Succeed(&*i);
+  }
+  for (int i = 0; i < repeat_count; ++i) {
+    thread_pool.Submit(&tasks[0]);
+    thread_pool.Wait();
+  }
+  EXPECT_EQ(counter, tasks.size() * repeat_count);
+}
+
 TEST(ThreadPoolTest, Cancel) {
   {
     SCOPED_TRACE("Cancel a not started task");
