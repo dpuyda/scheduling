@@ -230,17 +230,17 @@ d.Precede(&c, &d);
 
 To cancel a task, call `Task::Cancel`.
 
-Canceling a task never fails. If `Task::Cancel` returns `false`, this means that
-the task was already executed or has to be executed at least once after the
-cancellation. When a task is cancelled and will not be executed anymore, its
-successors also will not be executed.
+Cancelling a task never fails. If `Task::Cancel` returns `false`, this means
+that the task has been invoked earlier or will be invoked at least once after
+the cancellation. When a task is cancelled and will not be invoked anymore, its
+successors also will not be invoked.
 
 For example:
 ```cpp
 scheduling::Task task;
 thread_pool.Submit(&task);
 if (task.Cancel()) {
-  std::cout << "The task will not be executed" << std::endl;
+  std::cout << "The task will not be invoked" << std::endl;
 }
 ```
 
@@ -249,6 +249,12 @@ To undo cancellation, call `Task::Reset`:
 ```cpp
 task.Reset();
 ```
+
+## Resubmit a task graph
+
+You can submit a task graph multiple times, but you need to make sure that the
+graph is completed before resubmitting it. You cannot submit the same graph
+simultaneously from different threads.
 
 # Benchmarks
 

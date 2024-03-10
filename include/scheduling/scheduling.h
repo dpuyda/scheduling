@@ -9,8 +9,8 @@
 
 namespace scheduling {
 namespace internal {
-constexpr auto kExecuted = 1;
-constexpr auto kCancelled = 2;
+constexpr auto kCancelled = 1;
+constexpr auto kInvoked = 2;
 
 template <typename T>
   requires std::is_pointer_v<T>
@@ -264,20 +264,19 @@ class Task {
   /**
    * \brief Cancels the task.
    *
-   * Cancelling a task never fails. When `false` is returned, it means that the
-   * task was already executed or has to be executed at least once after the
-   * cancellation. When a task is cancelled and will not be executed anymore,
-   * its successors also will not be executed. Call `Reset` to undo
-   * cancellation.
+   * Cancelling a task never fails. If `false` is returned, it means that the
+   * task has been invoked earlier, or will be invoked at least once after the
+   * cancellation. When a task is cancelled and will not be invoked anymore, its
+   * successors also will not be invoked. Call `Reset` to undo cancellation.
    *
    * \see Reset
    *
-   * \return `false` if the task was already executed or has to be executed once
-   * after the cancellation, `true` otherwise.
+   * \return `false` if the task has been invoked earlier or will be invoked at
+   * least once after the cancellation, `true` otherwise.
    */
   bool Cancel() {
     return !(cancellation_flags_.fetch_or(internal::kCancelled) &
-             internal::kExecuted);
+             internal::kInvoked);
   }
 
   /**
@@ -457,7 +456,7 @@ class ThreadPool {
   void Execute(Task* task) {
     for (Task* next = nullptr; task; next = nullptr) {
       task->remaining_predecessors_.store(task->total_predecessors_);
-      if (task->cancellation_flags_.fetch_or(internal::kExecuted) &
+      if (task->cancellation_flags_.fetch_or(internal::kInvoked) &
           internal::kCancelled) {
         break;
       }
