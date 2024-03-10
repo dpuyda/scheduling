@@ -18,6 +18,7 @@ of Scheduling is less than 500 lines.
     * [Wait until a predicate is satisfied](#wait-until-a-predicate-is-satisfied)
     * [Define dependencies between task groups](#define-dependencies-between-task-groups)
     * [Cancel a task](#cancel-a-task)
+    * [Resubmit a task graph](#resubmit-a-task-graph)
 * [Benchmarks](#benchmarks)
     * [Fibonacci numbers](#fibonacci-numbers)
     * [Linear chain](#linear-chain)
