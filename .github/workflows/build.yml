@@ -19,12 +19,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu GCC
-            os: ubuntu-latest
-            compiler: gcc-13
+          - name: MacOS
+            os: macos-latest
           - name: Ubuntu Clang
             os: ubuntu-latest
             compiler: llvm
+          - name: Ubuntu GCC
+            os: ubuntu-latest
+            compiler: gcc-13
           - name: Windows MSVC
             os: windows-latest
             compiler: msvc
