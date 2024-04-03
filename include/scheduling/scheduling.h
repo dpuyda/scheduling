@@ -7,10 +7,31 @@
 #include <thread>
 #include <vector>
 
+#if defined(_MSC_VER)
+#define SCHEDULING_EXPORT __declspec(dllexport)
+#define SCHEDULING_IMPORT __declspec(dllimport)
+#elif defined(__GNUC__) || defined(__clang__)
+#define SCHEDULING_EXPORT __attribute__((visibility("default")))
+#define SCHEDULING_IMPORT
+#else
+#define SCHEDULING_EXPORT
+#define SCHEDULING_IMPORT
+#endif
+
+#ifdef SCHEDULING_SHARED_LIBRARY
+#ifdef SCHEDULING_LIBRARY
+#define SCHEDULING_API SCHEDULING_EXPORT
+#else
+#define SCHEDULING_API SCHEDULING_IMPORT
+#endif
+#else
+#define SCHEDULING_API
+#endif
+
 namespace scheduling {
 namespace internal {
 constexpr auto kCancelled = 1;
-constexpr auto kInvoked = 2;
+constexpr auto kInvoked = 1 << 1;
 
 template <typename T>
   requires std::is_pointer_v<T>
@@ -151,7 +172,7 @@ class ChaseLevDeque {
  * Dependencies between tasks define the order in which the tasks should be
  * executed.
  */
-class Task {
+class SCHEDULING_API Task {
  public:
   /**
    * \brief Creates an empty task.
@@ -220,7 +241,7 @@ class Task {
   void Succeed(Task* task) {
     task->next_.push_back(this);
     ++total_predecessors_;
-    ++remaining_predecessors_;
+    remaining_predecessors_.fetch_add(1);
   }
 
   /**
@@ -233,7 +254,7 @@ class Task {
   void Succeed(Task* task, const TasksType&... tasks) {
     task->next_.push_back(this);
     ++total_predecessors_;
-    ++remaining_predecessors_;
+    remaining_predecessors_.fetch_add(1);
     Succeed(tasks...);
   }
 
@@ -245,7 +266,7 @@ class Task {
   void Precede(Task* task) {
     next_.push_back(task);
     ++task->total_predecessors_;
-    ++task->remaining_predecessors_;
+    task->remaining_predecessors_.fetch_add(1);
   }
 
   /**
@@ -257,7 +278,7 @@ class Task {
   void Precede(Task* task, const TasksType&... tasks) {
     next_.push_back(task);
     ++task->total_predecessors_;
-    ++task->remaining_predecessors_;
+    task->remaining_predecessors_.fetch_add(1);
     Precede(tasks...);
   }
 
@@ -304,7 +325,7 @@ class Task {
  * The threads, managed by the thread pool, execute tasks in a work-stealing
  * manner.
  */
-class ThreadPool {
+class SCHEDULING_API ThreadPool {
  public:
   /**
    * \brief Creates a `ThreadPool` instance.
@@ -507,6 +528,4 @@ class ThreadPool {
   std::vector<std::thread> threads_;
   std::vector<internal::ChaseLevDeque<Task*>> queues_;
 };
-
-inline thread_local unsigned ThreadPool::index_{0};
 }  // namespace scheduling

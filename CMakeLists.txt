@@ -13,13 +13,27 @@ option(BUILD_DOCS "Build documentation" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 cmake_dependent_option(BUILD_TASKFLOW_BENCHMARK "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "BUILD_BENCHMARKS" OFF)
 
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME}
+  include/scheduling/scheduling.h
+  src/scheduling.cpp
+)
 
 target_include_directories(${PROJECT_NAME}
-  INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  PUBLIC
+  include
 )
+
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE
+  SCHEDULING_LIBRARY
+)
+
+if (BUILD_SHARED_LIBS)
+  target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+    SCHEDULING_SHARED_LIBRARY
+  )
+endif()
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include DESTINATION .)
 
