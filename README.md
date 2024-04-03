@@ -4,11 +4,10 @@
 ![Standard](https://img.shields.io/badge/C%2B%2B-20-blue)
 [![Build](https://github.com/dpuyda/scheduling/actions/workflows/build.yml/badge.svg)](https://github.com/dpuyda/scheduling/actions/workflows/build.yml)
 
-Scheduling is a simple, minimalistic and fast header-only library allowing you
-to run async tasks and execute task graphs.
+Scheduling is a simple, minimalistic and fast library allowing you to run async
+tasks and execute task graphs.
 
-Scheduling is developed with simplicity and performance in mind. The source code
-of Scheduling is less than 500 lines.
+Scheduling is developed with simplicity and performance in mind.
 
 * [Examples](#examples)
     * [Add Scheduling to your project](#add-scheduling-to-your-project)
