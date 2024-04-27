@@ -1,7 +1,9 @@
-project(benchmarks)
-
 include(benchmark.cmake)
+
+project(scheduling_benchmarks)
+
 set(BENCHMARKS_SOURCES scheduling.cpp)
+
 set(BENCHMARKS_LINK_LIBRARIES
   benchmark::benchmark
   benchmark::benchmark_main
