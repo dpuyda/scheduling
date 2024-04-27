@@ -1,43 +1,11 @@
-set(BENCHMARK_EXTERNAL_DIR "${CMAKE_BINARY_DIR}/external/benchmark")
-set(BENCHMARK_BUILD_DIR "${BENCHMARK_EXTERNAL_DIR}/build")
-set(BENCHMARK_DOWNLOAD_DIR "${BENCHMARK_EXTERNAL_DIR}/download")
-set(BENCHMARK_INSTALL_DIR "${BENCHMARK_EXTERNAL_DIR}/install")
-set(BENCHMARK_SRC_DIR "${BENCHMARK_EXTERNAL_DIR}/src")
+include(FetchContent)
+
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(FETCHCONTENT_QUIET OFF)
 
-file(WRITE "${BENCHMARK_DOWNLOAD_DIR}/CMakeLists.txt"
-  "cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
-  include(ExternalProject)
-  project(benchmark-download CXX)
-  ExternalProject_Add(benchmark-download
-    GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG main
-    GIT_SHALLOW 1
-    SOURCE_DIR \"${BENCHMARK_SRC_DIR}\"
-    BINARY_DIR \"${BENCHMARK_BUILD_DIR}\"
-    CONFIGURE_COMMAND \"\"
-    BUILD_COMMAND \"\"
-    INSTALL_COMMAND \"\"
-    TEST_COMMAND \"\"
-  )"
+FetchContent_Declare(benchmark
+  GIT_REPOSITORY https://github.com/google/benchmark.git
+  GIT_TAG        main
 )
 
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE BENCHMARK_CMAKE_RESULT
-  WORKING_DIRECTORY ${BENCHMARK_DOWNLOAD_DIR}
-)
-
-if(BENCHMARK_CMAKE_RESULT)
-  message(FATAL_ERROR "CMake for benchmark-download failed: ${BENCHMARK_CMAKE_RESULT}")
-endif()
-
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE BENCHMARK_BUILD_RESULT
-  WORKING_DIRECTORY ${BENCHMARK_DOWNLOAD_DIR}
-)
-
-if(BENCHMARK_BUILD_RESULT)
-  message(FATAL_ERROR "Build for taskflow-download failed: ${BENCHMARK_BUILD_RESULT}")
-endif()
-
-add_subdirectory(${BENCHMARK_SRC_DIR} ${BENCHMARK_BUILD_DIR})
+FetchContent_MakeAvailable(benchmark)
