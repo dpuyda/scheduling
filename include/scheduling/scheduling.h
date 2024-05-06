@@ -235,8 +235,7 @@ class SCHEDULING_API Task {
   /**
    * \brief Defines a task that should be executed before the current task.
    *
-   * \param task A task that should be executed before the current
-   * task.
+   * \param task A task that should be executed before the current task.
    */
   void Succeed(Task* task) {
     task->next_.push_back(this);
@@ -247,8 +246,7 @@ class SCHEDULING_API Task {
   /**
    * \brief Defines tasks that should be executed before the current task.
    *
-   * \param task, tasks Tasks that should be executed before the current
-   * task.
+   * \param task, tasks Tasks that should be executed before the current task.
    */
   template <typename... TasksType>
   void Succeed(Task* task, const TasksType&... tasks) {
@@ -296,8 +294,8 @@ class SCHEDULING_API Task {
    * least once after the cancellation, `true` otherwise.
    */
   bool Cancel() {
-    return !(cancellation_flags_.fetch_or(internal::kCancelled) &
-             internal::kInvoked);
+    return (cancellation_flags_.fetch_or(internal::kCancelled) &
+            internal::kInvoked) == 0;
   }
 
   /**
