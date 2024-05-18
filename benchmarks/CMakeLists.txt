@@ -1,6 +1,6 @@
 include(benchmark.cmake)
 
-project(scheduling_benchmarks)
+project(scheduling_benchmarks LANGUAGES CXX)
 
 set(BENCHMARKS_SOURCES scheduling.cpp)
 
