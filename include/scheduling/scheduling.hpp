@@ -46,17 +46,17 @@ class Array {
   Array(Array&&) = delete;
   Array& operator=(const Array&) = delete;
   Array& operator=(Array&&) = delete;
-  ~Array() { delete[] buffer_; }
+  ~Array() noexcept { delete[] buffer_; }
 
   void Put(const size_t index, T item) noexcept {
     buffer_[index & mask_].store(item, std::memory_order_relaxed);
   }
 
-  T Get(const size_t index) noexcept {
+  [[nodiscard]] T Get(const size_t index) noexcept {
     return buffer_[index & mask_].load(std::memory_order_relaxed);
   }
 
-  Array* Resize(const size_t bottom, const size_t top) {
+  [[nodiscard]] Array* Resize(const size_t bottom, const size_t top) {
     auto* array = new Array{2 * capacity_};
     for (auto i = top; i != bottom; ++i) {
       array->Put(i, Get(i));
@@ -87,7 +87,7 @@ class ChaseLevDeque {
   ChaseLevDeque& operator=(const ChaseLevDeque&) = delete;
   ChaseLevDeque& operator=(ChaseLevDeque&&) = delete;
 
-  ~ChaseLevDeque() {
+  ~ChaseLevDeque() noexcept {
     for (auto array : garbage_) {
       delete array;
     }
@@ -348,7 +348,7 @@ class SCHEDULING_API ThreadPool {
   ThreadPool& operator=(const ThreadPool&) = delete;
   ThreadPool& operator=(ThreadPool&&) = delete;
 
-  ~ThreadPool() {
+  ~ThreadPool() noexcept {
     Wait();
     stop_.test_and_set();
     tasks_count_ += queues_count_;
@@ -435,7 +435,7 @@ class SCHEDULING_API ThreadPool {
    * be continued.
    */
   template <typename PredicateType>
-  void Wait(PredicateType&& predicate) {
+  void Wait(const PredicateType& predicate) {
     while (!predicate()) {
       if (auto* task = GetTask()) {
         Execute(task);

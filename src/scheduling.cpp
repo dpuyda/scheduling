@@ -1,4 +1,4 @@
-#include "scheduling/scheduling.h"
+#include "scheduling/scheduling.hpp"
 
 namespace scheduling {
 thread_local unsigned ThreadPool::index_{0};

@@ -27,11 +27,13 @@ Scheduling is developed with simplicity and performance in mind.
     * [Tasks](#tasks)
 * [References](#references)
 
-Below are some GitHub projects related to task graphs in which you may also be
-interested:
+Below are some GitHub projects related to thread pools and task graphs in which
+you may be interested:
 
 * [Taskflow](https://github.com/taskflow/taskflow)
 * [CGraph](https://github.com/ChunelFeng/CGraph)
+* https://github.com/bshoshany/thread-pool
+* https://github.com/DeveloperPaul123/thread-pool
 
 # Examples
 
@@ -52,7 +54,7 @@ source code.
 
 To run async tasks, create a `ThreadPool` instance. For example:
 ```cpp
-#include "scheduling/scheduling.h"
+#include "scheduling/scheduling.hpp"
 ...
 scheduling::ThreadPool thread_pool;
 ```
@@ -91,7 +93,7 @@ executed.
 To define a task graph, create an iterable collection of `Task` instances. For
 example:
 ```cpp
-#include "scheduling/scheduling.h"
+#include "scheduling/scheduling.hpp"
 ...
 std::vector<scheduling::Task> tasks;
 ```

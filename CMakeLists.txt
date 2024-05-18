@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(scheduling VERSION 0.1.0.0)
+project(scheduling VERSION 0.1.0.0 LANGUAGES CXX)
 
 include(CMakeDependentOption)
 
@@ -14,7 +14,7 @@ option(BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 cmake_dependent_option(BUILD_TASKFLOW_BENCHMARK "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "BUILD_BENCHMARKS" OFF)
 
 add_library(${PROJECT_NAME}
-  include/scheduling/scheduling.h
+  include/scheduling/scheduling.hpp
   src/scheduling.cpp
 )
 
@@ -35,8 +35,6 @@ if (BUILD_SHARED_LIBS)
   )
 endif()
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include DESTINATION .)
-
 if (BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
@@ -49,3 +47,5 @@ if (BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include DESTINATION .)

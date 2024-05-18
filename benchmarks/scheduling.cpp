@@ -1,5 +1,5 @@
 #include <benchmark/benchmark.h>
-#include <scheduling/scheduling.h>
+#include <scheduling/scheduling.hpp>
 
 namespace scheduling::benchmarks::fibonacci {
 int Fibonacci(ThreadPool& thread_pool, const int n) {

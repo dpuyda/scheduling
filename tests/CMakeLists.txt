@@ -1,6 +1,6 @@
 include(googletest.cmake)
 
-project(scheduling_tests)
+project(scheduling_tests LANGUAGES CXX)
 add_executable(${PROJECT_NAME} thread_pool_test.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 

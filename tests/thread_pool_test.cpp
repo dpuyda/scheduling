@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <scheduling/scheduling.h>
+#include <scheduling/scheduling.hpp>
 
 namespace {
 using namespace scheduling;
