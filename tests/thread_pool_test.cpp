@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <scheduling/scheduling.hpp>
 
 namespace {
@@ -40,7 +41,7 @@ void MatrixMultiplication(const int n, std::vector<std::vector<int>>& a,
 
   for (int i = 0; i < n; ++i) {
     tasks
-        .emplace_back([&, i] {
+        .emplace_back([&, i, n] {
           for (int j = 0; j < n; ++j) {
             a[i][j] = i + j;
           }
@@ -50,7 +51,7 @@ void MatrixMultiplication(const int n, std::vector<std::vector<int>>& a,
 
   for (int i = 0; i < n; ++i) {
     tasks
-        .emplace_back([&, i] {
+        .emplace_back([&, i, n] {
           for (int j = 0; j < n; ++j) {
             b[i][j] = i * j;
           }
@@ -60,7 +61,7 @@ void MatrixMultiplication(const int n, std::vector<std::vector<int>>& a,
 
   for (int i = 0; i < n; ++i) {
     tasks
-        .emplace_back([&, i] {
+        .emplace_back([&, i, n] {
           for (int j = 0; j < n; ++j) {
             c[i][j] = 0;
           }
@@ -70,7 +71,7 @@ void MatrixMultiplication(const int n, std::vector<std::vector<int>>& a,
 
   for (int i = 0; i < n; ++i) {
     tasks
-        .emplace_back([&, i] {
+        .emplace_back([&, i, n] {
           for (int j = 0; j < n; ++j) {
             for (int k = 0; k < n; ++k) {
               c[i][j] += a[i][k] * b[k][j];
