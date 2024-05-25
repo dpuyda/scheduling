@@ -394,8 +394,8 @@ class SCHEDULING_API ThreadPool {
    * \param task The task to execute.
    */
   void Submit(Task* task) {
-    queues_[index_].Push(task);
     ++tasks_count_;
+    queues_[index_].Push(task);
     tasks_count_.notify_one();
   }
 

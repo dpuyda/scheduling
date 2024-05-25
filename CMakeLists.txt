@@ -4,14 +4,19 @@ project(scheduling VERSION 0.1.0.0 LANGUAGES CXX)
 
 include(CMakeDependentOption)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 20)
+endif()
+
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(BUILD_BENCHMARKS "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_DOCS "Build documentation" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
-cmake_dependent_option(BUILD_TASKFLOW_BENCHMARK "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "BUILD_BENCHMARKS" OFF)
+
+cmake_dependent_option(BUILD_TASKFLOW_BENCHMARK
+  "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "BUILD_BENCHMARKS" OFF
+)
 
 add_library(${PROJECT_NAME}
   include/scheduling/scheduling.hpp
