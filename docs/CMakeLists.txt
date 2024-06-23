@@ -1,6 +1,6 @@
 find_package(Doxygen)
 
-if (DOXYGEN_FOUND)
+if(DOXYGEN_FOUND)
   set(DOXYGEN_EXCLUDE_SYMBOLS scheduling::internal)
   set(DOXYGEN_HIDE_FRIEND_COMPOUNDS YES)
   set(DOXYGEN_SHOW_USED_FILES NO)
@@ -11,5 +11,5 @@ if (DOXYGEN_FOUND)
     ${DOXYGEN_USE_MDFILE_AS_MAINPAGE}
     COMMENT "Generate HTML documentation")
 else()
-  message(WARNING "Doxygen not found, documentation will not be generated")
+  message(WARNING "Doxygen is not found, documentation will not be generated.")
 endif()

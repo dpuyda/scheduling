@@ -10,12 +10,12 @@ endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(BUILD_BENCHMARKS "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
-option(BUILD_DOCS "Build documentation" ${PROJECT_IS_TOP_LEVEL})
-option(BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
+option(SCHEDULING_BUILD_BENCHMARKS "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
+option(SCHEDULING_BUILD_DOCS "Build documentation" ${PROJECT_IS_TOP_LEVEL})
+option(SCHEDULING_BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 
-cmake_dependent_option(BUILD_TASKFLOW_BENCHMARK
-  "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "BUILD_BENCHMARKS" OFF
+cmake_dependent_option(SCHEDULING_BUILD_TASKFLOW_BENCHMARK
+  "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "SCHEDULING_BUILD_BENCHMARKS" OFF
 )
 
 add_library(${PROJECT_NAME}
@@ -40,15 +40,15 @@ if (BUILD_SHARED_LIBS)
   )
 endif()
 
-if (BUILD_BENCHMARKS)
+if (SCHEDULING_BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
 
-if (BUILD_DOCS)
+if (SCHEDULING_BUILD_DOCS)
   add_subdirectory(docs)
 endif()
 
-if (BUILD_TESTS)
+if (SCHEDULING_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
