@@ -10,10 +10,17 @@ int Fibonacci(ThreadPool& thread_pool, const int n) {
   if (n < 2) {
     return 1;
   }
-  int a = 0, b = 0;
-  thread_pool.Submit([&, n] { a = Fibonacci(thread_pool, n - 1); });
-  thread_pool.Submit([&, n] { b = Fibonacci(thread_pool, n - 2); });
-  thread_pool.Wait([&] { return a != 0 && b != 0; });
+  int a, b;
+  std::atomic counter{0};
+  thread_pool.Submit([&, n] {
+    a = Fibonacci(thread_pool, n - 1);
+    counter.fetch_add(1);
+  });
+  thread_pool.Submit([&, n] {
+    b = Fibonacci(thread_pool, n - 2);
+    counter.fetch_add(1);
+  });
+  thread_pool.Wait([&] { return counter.load() == 2; });
   return a + b;
 }
 
