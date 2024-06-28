@@ -25,6 +25,8 @@ Scheduling is developed with simplicity and performance in mind.
 * [Implementation details](#implementation-details)
     * [Thread pool](#thread-pool)
     * [Tasks](#tasks)
+* [License](#license)
+    * [Third-party licenses](#third-party-licenses)
 * [References](#references)
 
 Below are some GitHub projects related to thread pools and task graphs in which
@@ -440,6 +442,17 @@ of the successors, for which the number of uncompleted predecessors becomes
 equal to zero, is then executed on the same worker thread. Other successors, for
 which the number of uncompleted predecessors becomes equal to zero, are
 submitted to the same `ThreadPool` instance for execution.
+
+# License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Third-party licenses
+
+This project includes code from
+[Google Filament](https://github.com/google/filament), which is licensed under
+the Apache License 2.0. You can find the text of the Apache License 2.0 in the
+[LICENSE-APACHE](LICENSE-APACHE) file.
 
 # References
 

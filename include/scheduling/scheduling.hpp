@@ -1,3 +1,17 @@
+// This project is licensed under the MIT License.
+//
+// The `WorkStealingDeque` class is copied from Google Filament licensed under
+// the Apache License 2.0. See the LICENSE-APACHE file in the root directory of
+// this project for more information.
+// Source:
+// https://github.com/google/filament/blob/main/libs/utils/include/utils/WorkStealingDequeue.h
+// Modifications:
+// - Make the work-stealing deque variable-sized.
+//
+// The `Array` class is copied from Taskflow licensed under the MIT License.
+// Source:
+// https://github.com/taskflow/taskflow/blob/master/taskflow/core/tsq.hpp
+
 #pragma once
 #include <atomic>
 #include <cassert>
@@ -74,20 +88,20 @@ class Array {
 
 template <typename T>
   requires std::is_pointer_v<T>
-class ChaseLevDeque {
+class WorkStealingDeque {
  public:
-  explicit ChaseLevDeque(const int capacity = 1024)
+  explicit WorkStealingDeque(const int capacity = 1024)
       : top_{0}, bottom_{0}, array_{new Array<T>{capacity}} {
     assert(capacity && (capacity & capacity - 1) == 0);
     garbage_.reserve(64);
   }
 
-  ChaseLevDeque(const ChaseLevDeque&) = delete;
-  ChaseLevDeque(ChaseLevDeque&&) = delete;
-  ChaseLevDeque& operator=(const ChaseLevDeque&) = delete;
-  ChaseLevDeque& operator=(ChaseLevDeque&&) = delete;
+  WorkStealingDeque(const WorkStealingDeque&) = delete;
+  WorkStealingDeque(WorkStealingDeque&&) = delete;
+  WorkStealingDeque& operator=(const WorkStealingDeque&) = delete;
+  WorkStealingDeque& operator=(WorkStealingDeque&&) = delete;
 
-  ~ChaseLevDeque() noexcept {
+  ~WorkStealingDeque() noexcept {
     for (auto array : garbage_) {
       delete array;
     }
@@ -102,51 +116,48 @@ class ChaseLevDeque {
       array = Resize(array, bottom, top);
     }
     array->Put(bottom, item);
-    std::atomic_thread_fence(std::memory_order_release);
-    bottom_.store(bottom + 1, std::memory_order_relaxed);
+    bottom_.store(bottom + 1, std::memory_order_release);
   }
 
-  T Pop() {
-    const auto bottom = bottom_.load(std::memory_order_relaxed) - 1;
+  [[nodiscard]] T Pop() {
+    const auto bottom = bottom_.fetch_sub(1, std::memory_order_seq_cst) - 1;
     auto* array = array_.load(std::memory_order_relaxed);
-    bottom_.store(bottom, std::memory_order_relaxed);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    auto top = top_.load(std::memory_order_relaxed);
-    T item{nullptr};
-    if (top <= bottom) {
-      item = array->Get(bottom);
-      if (top == bottom) {
-        if (!top_.compare_exchange_strong(top, top + 1,
-                                          std::memory_order_seq_cst,
-                                          std::memory_order_relaxed)) {
-          item = nullptr;
-        }
-        bottom_.store(bottom + 1, std::memory_order_relaxed);
-      }
-    } else {
-      bottom_.store(bottom + 1, std::memory_order_relaxed);
+    auto top = top_.load(std::memory_order_seq_cst);
+    if (top < bottom) {
+      return array->Get(bottom);
     }
+    T item{nullptr};
+    if (top == bottom) {
+      item = array->Get(bottom);
+      if (top_.compare_exchange_strong(top, top + 1, std::memory_order_seq_cst,
+                                       std::memory_order_relaxed)) {
+        ++top;
+      } else {
+        item = nullptr;
+      }
+    }
+    bottom_.store(top, std::memory_order_relaxed);
     return item;
   }
 
-  T Steal() {
-    auto top = top_.load(std::memory_order_acquire);
-    std::atomic_thread_fence(std::memory_order_seq_cst);
-    const auto bottom = bottom_.load(std::memory_order_acquire);
-    T item{nullptr};
-    if (top < bottom) {
-      auto* array = array_.load(std::memory_order_acquire);
-      item = array->Get(top);
-      if (!top_.compare_exchange_strong(top, top + 1, std::memory_order_seq_cst,
-                                        std::memory_order_relaxed)) {
-        return nullptr;
-      }
+  [[nodiscard]] T Steal() {
+    auto top = top_.load(std::memory_order_seq_cst);
+    if (const auto bottom = bottom_.load(std::memory_order_seq_cst);
+        top >= bottom) {
+      return nullptr;
+    }
+    auto* array = array_.load(std::memory_order_acquire);
+    const auto item = array->Get(top);
+    if (!top_.compare_exchange_strong(top, top + 1, std::memory_order_seq_cst,
+                                      std::memory_order_relaxed)) {
+      return nullptr;
     }
     return item;
   }
 
  private:
-  Array<T>* Resize(Array<T>* array, const size_t bottom, const size_t top) {
+  [[nodiscard]] Array<T>* Resize(Array<T>* array, const size_t bottom,
+                                 const size_t top) {
     auto* tmp = array->Resize(bottom, top);
     garbage_.push_back(array);
     std::swap(array, tmp);
@@ -524,6 +535,6 @@ class SCHEDULING_API ThreadPool {
   std::atomic_flag stop_;
   std::atomic<unsigned> tasks_count_;
   std::vector<std::thread> threads_;
-  std::vector<internal::ChaseLevDeque<Task*>> queues_;
+  std::vector<internal::WorkStealingDeque<Task*>> queues_;
 };
 }  // namespace scheduling
