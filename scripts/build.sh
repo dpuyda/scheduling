@@ -1,4 +1,5 @@
 #!/bin/bash
+
 BUILD_DIR="${BUILD_DIR:-build}"
 
 # Create build directory
@@ -13,7 +14,7 @@ mkdir $BUILD_DIR && cd $BUILD_DIR
 
 # Run CMake
 echo Running CMake...
-cmake ..
+cmake $1 ..
 
 if [ ! $? -eq 0 ]
 then
@@ -33,7 +34,7 @@ fi
 
 # Run tests
 echo Running tests...
-ctest --output-on-failure
+ctest --output-on-failure --verbose
 
 if [ ! $? -eq 0 ]
 then

@@ -3,15 +3,14 @@
 // The `WorkStealingDeque` class is copied from Google Filament licensed under
 // the Apache License 2.0. See the LICENSE-APACHE file in the root directory of
 // this project for more information.
-// Source:
+// Original code:
 // https://github.com/google/filament/blob/main/libs/utils/include/utils/WorkStealingDequeue.h
 // Modifications:
 // - Make the work-stealing deque variable-sized.
 //
 // The `Array` class is copied from Taskflow licensed under the MIT License.
-// Source:
+// Original code:
 // https://github.com/taskflow/taskflow/blob/master/taskflow/core/tsq.hpp
-
 #pragma once
 #include <atomic>
 #include <cassert>
