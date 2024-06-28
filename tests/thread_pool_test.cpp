@@ -153,7 +153,7 @@ TEST(ThreadPoolTest, ArithmeticExpression) {
 TEST(ThreadPoolTest, Fibonacci) {
   int a = 1, b = 1;
   ThreadPool thread_pool;
-  for (int n = 2; n < 35; ++n) {
+  for (int n = 2; n < 30; ++n) {
     const auto actual = Fibonacci(thread_pool, n);
     const auto expected = a + b;
     EXPECT_EQ(actual, expected) << "n = " << n;

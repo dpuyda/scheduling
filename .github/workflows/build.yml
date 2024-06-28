@@ -27,6 +27,14 @@ jobs:
           - name: Ubuntu GCC
             os: ubuntu-latest
             compiler: gcc-13
+          - name: Ubuntu GCC TSAN
+            os: ubuntu-latest
+            compiler: gcc-13
+            options: "-DSCHEDULING_ENABLE_THREAD_SANITIZER=ON"
+          - name: Ubuntu GCC ASAN LSAN UBSAN
+            os: ubuntu-latest
+            compiler: gcc-13
+            options: "-DSCHEDULING_ENABLE_ADDRESS_SANITIZER=ON -DSCHEDULING_ENABLE_LEAK_SANITIZER=ON -DSCHEDULING_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER=ON"
           - name: Windows MSVC
             os: windows-latest
             compiler: msvc
@@ -41,5 +49,5 @@ jobs:
         compiler: ${{matrix.compiler}}
 
     - name: Build
-      run: ./scripts/build.sh
+      run: ./scripts/build.sh "${{matrix.options}}"
       shell: bash
