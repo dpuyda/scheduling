@@ -525,12 +525,11 @@ class SCHEDULING_API ThreadPool {
       if (constexpr auto max_attempts = 100; ++attempts > max_attempts) {
         tasks_count_.wait(0);
       }
-      if (stop_.test()) {
-        return;
-      }
       if (auto* task = GetTask()) {
         Execute(task);
         attempts = 0;
+      } else if (stop_.test()) {
+        return;
       }
     }
   }
