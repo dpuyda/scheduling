@@ -5,7 +5,7 @@
 [![Build](https://github.com/dpuyda/scheduling/actions/workflows/build.yml/badge.svg)](https://github.com/dpuyda/scheduling/actions/workflows/build.yml)
 
 Scheduling is a simple, minimalistic and fast library allowing you to run async
-tasks and execute task graphs.
+tasks and task graphs.
 
 Scheduling is developed with simplicity and performance in mind.
 
@@ -39,8 +39,7 @@ you may be interested:
 
 # Examples
 
-We start with examples demonstrating how to run async tasks and build task
-graphs.
+We start with examples demonstrating how to run async tasks and task graphs.
 
 ## Add Scheduling to your project
 
@@ -48,9 +47,6 @@ To add Scheduling to your project, you can use CMake. For example:
 ```cmake
 target_link_libraries(${PROJECT_NAME} PRIVATE scheduling)
 ```
-
-Alternatively, you can simply add the content of the `include` folder to your
-source code.
 
 ## Run async tasks
 
@@ -60,8 +56,8 @@ To run async tasks, create a `ThreadPool` instance. For example:
 ...
 scheduling::ThreadPool thread_pool;
 ```
-In the constructor, the `ThreadPool` instance creates several worker threads
-that will be running in the background until the `ThreadPool` instance is
+In the constructor, the `ThreadPool` class creates several worker threads
+that will be running in the background until the instance is
 destroyed. As an optional argument, the constructor of the `ThreadPool` class
 accepts the number of threads to create. By default, the number of threads is
 equal to `std::thread::hardware_concurrency()`.
@@ -70,7 +66,7 @@ When the `ThreadPool` instance is created, submit a task. For example:
 ```cpp
 thread_pool.Submit([] {
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  std::cout << "Completed" << std::endl;
+  std::cout << "Completed.\n";
 });
 ```
 A task is a function that does not accept arguments and returns `void`. Use
@@ -78,12 +74,12 @@ lambda captures to pass input and output arguments to the task. Eventually, the
 task will be executed on one of the worker threads owned by the `ThreadPool`
 instance.
 
-If needed, call `Wait` to block the current thread until all submitted tasks
+If needed, call `Wait()` to block the current thread until all submitted tasks
 are completed. For example:
 ```cpp
 thread_pool.Wait();
 ```
-In the destructor, the `ThreadPool` instance blocks the current thread until all
+In the destructor, the `ThreadPool` class blocks the current thread until all
 submitted tasks are completed.
 
 ## Build task graphs
@@ -171,8 +167,8 @@ submit the task graph for execution:
 scheduling::ThreadPool thread_pool;
 thread_pool.Submit(tasks);
 ```
-If needed, call `Wait` to block the current thread until all submitted tasks are
-completed:
+If needed, call `Wait()` to block the current thread until all submitted tasks
+are completed:
 ```cpp
 thread_pool.Wait();
 ```
@@ -202,7 +198,7 @@ while waiting until a specified condition is met, use the `Wait` overload
 accepting a predicate.
 
 For example, below is a recursive function to calculate Fibonacci numbers
-without memoization used in benchmarks:
+without memoization used in the benchmarks:
 
 ```cpp
 int Fibonacci(ThreadPool& thread_pool, const int n) {
@@ -239,9 +235,9 @@ d.Precede(&c, &d);
 
 ## Cancel a task
 
-To cancel a task, call `Task::Cancel`.
+To cancel a task, call `Task::Cancel()`.
 
-Cancelling a task never fails. If `Task::Cancel` returns `false`, this means
+Cancelling a task never fails. If `Task::Cancel()` returns `false`, this means
 that the task has been invoked earlier or will be invoked at least once after
 the cancellation. When a task is cancelled and will not be invoked anymore, its
 successors also will not be invoked.
@@ -251,11 +247,11 @@ For example:
 scheduling::Task task;
 thread_pool.Submit(&task);
 if (task.Cancel()) {
-  std::cout << "The task will not be invoked" << std::endl;
+  std::cout << "The task will not be invoked.\n";
 }
 ```
 
-To undo cancellation, call `Task::Reset`:
+To undo cancellation, call `Task::Reset()`:
 
 ```cpp
 task.Reset();
@@ -269,10 +265,10 @@ simultaneously from different threads.
 
 # Benchmarks
 
-We compare Scheduling to [Taskflow](https://github.com/taskflow/taskflow), which
-is a highly optimized library for parallel and heterogeneous programming
+We compare Scheduling with [Taskflow](https://github.com/taskflow/taskflow),
+which is a highly optimized library for parallel and heterogeneous programming
 [[1]](#1), [[2]](#2). We use [Google Benchmark](https://github.com/google/benchmark)
-for benchmarking. Comparison of Taskflow and other popular libraries for async
+for benchmarking. Comparison of Taskflow with other popular libraries for async
 programming can be found in Taskflow documentation.
 
 We measure the total time needed to create and execute tasks. The benchmarks
@@ -393,55 +389,58 @@ taskflow/matrix_multiplication/2048        10443 ms         31.2 ms            1
 
 # Implementation details
 
-In this section, we describe some implementation details of the Scheduling
-library.
+In this section, we briefly describe some implementation details of the
+Scheduling library.
 
-## Thread pool
+## Chase-Lev deque
 
-Here, we introduce a simple static thread pool to execute task graphs. We
-utilize the work-stealing approach [[3]](#3) based on the Chase-Lev deque
-[[4]](#4), [[5]](#5).
+The idea of work-stealing queues is to provide each worker thread with its own task queue to reduce
+thread contention [[3]](#3). When a task is submitted, it is pushed to one of the queues. The thread
+owning the queue can eventually pick up the task and execute it. If there are no tasks in the queue
+owned by a worker thread, the thread attempts to steal a task from another queue.
 
-In the constructor of our `ThreadPool` class, we create a specified number of
-worker threads. Each worker thread has a task queue implemented as a Chase-Lev
-deque. There is also the main task queue for tasks created on the main thread.
+Work-stealing queues are typically implemented as lock-free deques. The owning thread pops elements
+at one end of the deque, while other threads steal elements at the other end.
 
-A special property of the Chase-Lev deque consists in the fact that only one
-thread can push and pop items at one end of the deque, while other threads can
-steal items at the other end. The classical implementation of Chase-Lev deque
-can only store pointers, and a pop or steal operation can fail (i.e. return a
-`nullptr`) if the deque is empty or if multiple threads are trying to access the
-same element at the same time.
+Implementing a work-stealing deque is not an easy task. The Chase-Lev deque [[4]](#4), [[5]](#5) is
+one of the most commonly used implementations of such a deque. The original C11 implementation of
+the Chase-Lev deque [[5]](#5) uses atomic thread fences without associated atomic operations. When
+compiling with a thread sanitizer, GCC 13 issues a warning saying that ‘atomic\_thread\_fence’ is
+not supported with ‘-fsanitize=thread’. Thread sanitizers may produce false positives when atomic
+thread fences are used. For example, when using the Taskflow implementation of the work-stealing
+deque, the thread sanitizer detects data races in the solution suggested in this paper. The Taskflow
+implementation of the deque contains the following lines of code:
+```cpp
+std::atomic_thread_fence(std::memory_order_release);
+_bottom[p].data.store(b + 1, std::memory_order_relaxed);
+```
+If `memory_order_relaxed` is replaced here by `memory_order_release`, the sanitizer stops detecting
+the data races. This might indicate a false positive related to the usage of
+`std::atomic_thread_fence`. It is worth noting that Taskflow unit tests and examples pass with the
+thread sanitizer even though `std::atomic_thread_fence` is used.
 
-When getting a task, a worker thread tries to pop a task from its own task queue
-first. In case it fails, it then tries to steal a task from other task queues.
-To ensure that only one thread pushes and pops tasks at one end of the queue,
-when pushing a task, we need to select the queue very carefully. When a task is
-pushed on the main thread, we should always use the main queue. When a task is
-pushed on a worker thread, we should use the queue belonging to the same thread.
-A typical way to do this is creating a map between thread ID and indices of task
-queues (e.g., [[1]](#1)). Then, we can use `std::this_thread::get_id` to get
-the ID of the pushing thread and get the index of the correct queue from the
-map. A more efficient approach consists in storing indices of task queues in a
-thread-local variable. When a worker thread is created, we initialize a
-thread-local variable with the corresponding queue index. Then, when pushing a
-task, we select the queue based on the index stored in this variable.
-Thread-locality ensures that the correct queue is selected.
+An example of a work-stealing deque implementation that does not use std::atomic\_thread\_fence can
+be found in [Google Filament](https://github.com/google/filament). When using the implementation
+from Google Filament, the thread sanitizer does not detect data races in the suggested solution.
 
-To track the total number of tasks in the queues, we use an atomic counter.
-`std::atomic<T>::wait`, which is added in C++20, allows us to put a worker
-thread to sleep when there are no tasks in the queues.
+Concurrent push and pop operations are not allowed in most implementations of the work-stealing
+deque. To ensure that there are no concurrent push and pop operations, mappings from thread ID to
+queue indices are typically used. When a task is pushed to or popped from a queue, the correct queue
+is usually found using the current thread ID. Unlike this typical approach, the solution suggested
+in this paper uses a thread-local variable to find the correct task queue. It makes the solution not
+header-only, but this will not matter once modules from the C++20 standard are used. Unfortunately,
+at the time of writing this paper, there seems to be not enough compiler support to present the
+suggested solution in the form of a cross-platform module.
 
-## Tasks
+## Task graphs
 
-A task is a simple wrapper over an `std::function<void()>` instance. It also
-stores the successor tasks and the number of uncompleted predecessor tasks. When
-`ThreadPool` executes a task, it executes the wrapped function first. Then, for
-each successor task, it decrements the number of uncompleted predecessors. One
-of the successors, for which the number of uncompleted predecessors becomes
-equal to zero, is then executed on the same worker thread. Other successors, for
-which the number of uncompleted predecessors becomes equal to zero, are
-submitted to the same `ThreadPool` instance for execution.
+To run task graphs, simple wrappers over an `std::function<void()>` are used. Each wrapper stores
+references to successor tasks and the number of uncompleted predecessor tasks. When the thread pool
+executes a task, it first executes the wrapped function. Then, for each successor task, it
+decrements the number of uncompleted predecessor tasks. One of the successor tasks, for which the
+number of uncompleted predecessor tasks becomes equal to zero, is then executed on the same worker
+thread. Other successor tasks, for which the number of uncompleted predecessor tasks becomes equal
+to zero, are submitted to the same thread pool instance for execution.
 
 # License
 
