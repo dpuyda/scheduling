@@ -405,8 +405,8 @@ at one end of the deque, while other threads steal elements at the other end.
 Implementing a work-stealing deque is not an easy task. The Chase-Lev deque [[4]](#4), [[5]](#5) is
 one of the most commonly used implementations of such a deque. The original C11 implementation of
 the Chase-Lev deque [[5]](#5) uses atomic thread fences without associated atomic operations. When
-compiling with a thread sanitizer, GCC 13 issues a warning saying that ‘atomic\_thread\_fence’ is
-not supported with ‘-fsanitize=thread’. Thread sanitizers may produce false positives when atomic
+compiling with a thread sanitizer, GCC 13 issues a warning saying that `atomic_thread_fence` is
+not supported with `-fsanitize=thread`. Thread sanitizers may produce false positives when atomic
 thread fences are used. For example, when using the Taskflow implementation of the work-stealing
 deque, the thread sanitizer detects data races in the solution suggested in this paper. The Taskflow
 implementation of the deque contains the following lines of code:
@@ -419,7 +419,7 @@ the data races. This might indicate a false positive related to the usage of
 `std::atomic_thread_fence`. It is worth noting that Taskflow unit tests and examples pass with the
 thread sanitizer even though `std::atomic_thread_fence` is used.
 
-An example of a work-stealing deque implementation that does not use std::atomic\_thread\_fence can
+An example of a work-stealing deque implementation that does not use `std::atomic_thread_fence` can
 be found in [Google Filament](https://github.com/google/filament). When using the implementation
 from Google Filament, the thread sanitizer does not detect data races in the suggested solution.
 
