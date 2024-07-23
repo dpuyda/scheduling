@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/badge/License-MIT-blue)
 ![Standard](https://img.shields.io/badge/C%2B%2B-20-blue)
 [![Build](https://github.com/dpuyda/scheduling/actions/workflows/build.yml/badge.svg)](https://github.com/dpuyda/scheduling/actions/workflows/build.yml)
+[![arXiv:2407.15805](https://img.shields.io/badge/arXiv-2407.15805-b31b1b)](https://arxiv.org/abs/2407.15805)
 
 Scheduling is a simple, minimalistic and fast library allowing you to run async
 tasks and task graphs.
