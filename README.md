@@ -462,7 +462,7 @@ This project is licensed under the [MIT License](LICENSE).
 <a id="1">[1]</a> Chun-Xun Lin, Tsung-Wei Huang and Martin D. F. Wong, *An
 Efficient Work-Stealing Scheduler for Task Dependency Graph*, IEEE 26th
 International Conference on Parallel and Distributed Systems (ICPADS),
-pages 64–71, 2020.
+pages 64-71, 2020.
 
 <a id="2">[2]</a> Tsung-Wei Huang, Dian-Lun Lin, Chun-Xun Lin, and Yibo Lin,
 *Taskflow: A Lightweight Parallel and Heterogeneous Task Graph Computing System*,
