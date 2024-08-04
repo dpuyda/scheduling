@@ -449,28 +449,34 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Third-party licenses
 
-This project includes code from
-[Google Filament](https://github.com/google/filament), which is licensed under
-the Apache License 2.0. You can find the text of the Apache License 2.0 in the
-[LICENSE-APACHE](LICENSE-APACHE) file.
+* This project includes code from
+  [Google Filament](https://github.com/google/filament), which is licensed under
+  the Apache License 2.0. You can find the text of the Apache License 2.0 in the
+  [LICENSE-APACHE](LICENSE-APACHE) file.
+
+* This project includes code from [Taskflow](https://github.com/taskflow/taskflow),
+  which is licensed under the MIT license.
 
 # References
 
-<a id="1">[1]</a> Chun-Xun Lin, Tsung-Wei Huang and Martin D. F. Wong, An
-Efficient Work-Stealing Scheduler for Task Dependency Graph
+<a id="1">[1]</a> Chun-Xun Lin, Tsung-Wei Huang and Martin D. F. Wong, *An
+Efficient Work-Stealing Scheduler for Task Dependency Graph*, IEEE 26th
+International Conference on Parallel and Distributed Systems (ICPADS),
+pages 64–71, 2020.
 
 <a id="2">[2]</a> Tsung-Wei Huang, Dian-Lun Lin, Chun-Xun Lin, and Yibo Lin,
-Taskflow: A Lightweight Parallel and Heterogeneous Task Graph Computing System
+*Taskflow: A Lightweight Parallel and Heterogeneous Task Graph Computing System*,
+IEEE Transactions on Parallel and Distributed Systems, Volume 33, Issue 6, pages
+1303-1320, 2022.
 
-<a id="3">[3]</a> Anthony Williams, C++ Concurrency in Action, 2nd Edition,
+<a id="3">[3]</a> Anthony Williams, *C++ Concurrency in Action*, 2nd Edition,
 Manning, 592 pages, 2019.
 
-<a id="4">[4]</a> David Chase and Yossi Lev. Dynamic circular work-stealing
-deque. In Proceedings of the seventeenth annual ACM symposium on Parallelism in
-algorithms and architectures, SPAA '05, pages 21-28, New York, NY, USA, 2005.
-ACM.
+<a id="4">[4]</a> David Chase and Yossi Lev, *Dynamic circular work-stealing
+deque*, SPAA '05: Proceedings of the seventeenth annual ACM symposium on
+Parallelism in algorithms and architectures, pages 21-28, 2005.
 
-<a id="5">[5]</a> N.M. Le, A. Pop, A. Cohen, and F. Zappa Nardelli. Correct and
-efficient work-stealing for weak memory models. In Proceedings of the 18th ACM
-SIGPLAN Symposium on Principles and Practice of Parallel Programming, PPoPP '13,
-pages 69-80, New York, NY, USA, 2013. ACM.
+<a id="5">[5]</a> N.M. Le, A. Pop, A. Cohen, and F. Zappa Nardelli. *Correct and
+efficient work-stealing for weak memory models*, Proceedings of the 18th ACM
+SIGPLAN Symposium on Principles and Practice of Parallel Programming,
+pages 69-80, 2013.
