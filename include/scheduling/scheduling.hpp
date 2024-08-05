@@ -80,8 +80,7 @@ class Array {
   [[nodiscard]] int Capacity() const { return capacity_; }
 
  private:
-  int capacity_;
-  int mask_;
+  const int capacity_, mask_;
   std::atomic<T>* buffer_;
 };
 
@@ -101,7 +100,7 @@ class WorkStealingDeque {
   WorkStealingDeque& operator=(WorkStealingDeque&&) = delete;
 
   ~WorkStealingDeque() noexcept {
-    for (auto array : garbage_) {
+    for (auto* array : garbage_) {
       delete array;
     }
     delete array_.load();
@@ -582,7 +581,7 @@ class SCHEDULING_API ThreadPool {
   }
 
   static thread_local unsigned index_;
-  unsigned queues_count_;
+  const unsigned queues_count_;
   std::atomic_flag stop_;
   std::atomic<unsigned> tasks_count_;
   std::vector<std::thread> threads_;
