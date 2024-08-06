@@ -267,23 +267,28 @@ simultaneously from different threads.
 # Benchmarks
 
 We compare Scheduling with [Taskflow](https://github.com/taskflow/taskflow),
-which is a highly optimized library for parallel and heterogeneous programming
+a highly optimized library for parallel and heterogeneous programming
 [[1]](#1), [[2]](#2). We use [Google Benchmark](https://github.com/google/benchmark)
-for benchmarking. Comparison of Taskflow with other popular libraries for async
+for benchmarking. Comparison of Taskflow with popular libraries for async
 programming can be found in Taskflow documentation.
 
 We measure the total time needed to create and execute tasks. The benchmarks
-were run on 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz, 2083 Mhz, 4 Cores,
-8 Logical Processors running Windows 10.0.19045:
+were run on Intel(R) Xeon(R) CPU i7-1165G7 @ 2.80GHz with 32 CPUs,
+running Debian GNU/Linux 12 (bookworm):
 
 ```
-Run on (8 X 2803 MHz CPU s)
+Run on (32 X 2800.27 MHz CPU s)
 CPU Caches:
-  L1 Data 48 KiB (x4)
-  L1 Instruction 32 KiB (x4)
-  L2 Unified 1280 KiB (x4)
-  L3 Unified 12288 KiB (x1)
+  L1 Data 32 KiB (x16)
+  L1 Instruction 32 KiB (x16)
+  L2 Unified 1024 KiB (x16)
+  L3 Unified 33792 KiB (x2)
+Load Average: 3.83, 2.00, 0.78
 ```
+
+The comparison was made between commit [ae8a367](https://github.com/dpuyda/scheduling/commit/ae8a36702193f6eeb4d3e36090e70c57d67ce413)
+of Scheduling and commit [9823d00](https://github.com/taskflow/taskflow/commit/9823d00e119b2205943de737b9ca5f93c5cc26bd)
+of Taskflow.
 
 ## Fibonacci numbers
 
@@ -303,26 +308,28 @@ Below is a sample output of Google Benchmark:
 ------------------------------------------------------------------
 Benchmark                        Time             CPU   Iterations
 ------------------------------------------------------------------
-scheduling/fibonacci/25       28.0 ms         13.4 ms           50
-scheduling/fibonacci/26       31.6 ms         11.8 ms           45
-scheduling/fibonacci/27       64.0 ms         43.9 ms           16
-scheduling/fibonacci/28       97.4 ms         78.1 ms           11
-scheduling/fibonacci/29        134 ms         99.0 ms            6
-scheduling/fibonacci/30        228 ms          184 ms            4
-scheduling/fibonacci/31        363 ms          349 ms            3
-scheduling/fibonacci/32        547 ms          539 ms            2
-scheduling/fibonacci/33        854 ms          656 ms            1
-scheduling/fibonacci/34       1349 ms         1359 ms            1
-scheduling/fibonacci/35       2203 ms         2188 ms            1
-taskflow/fibonacci/25         49.0 ms         31.2 ms           22
-taskflow/fibonacci/26         80.0 ms         49.7 ms           11
-taskflow/fibonacci/27          129 ms         89.3 ms            7
-taskflow/fibonacci/28          212 ms          144 ms            5
-taskflow/fibonacci/29          343 ms          234 ms            3
-taskflow/fibonacci/30          536 ms          383 ms            2
-taskflow/fibonacci/31          982 ms          625 ms            1
-taskflow/fibonacci/32         1506 ms         1016 ms            1
-taskflow/fibonacci/33         2540 ms         1734 ms            1
+scheduling/fibonacci/25       42.4 ms         36.8 ms           20
+scheduling/fibonacci/26       59.1 ms         55.6 ms           10
+scheduling/fibonacci/27       60.4 ms         57.0 ms            9
+scheduling/fibonacci/28       89.5 ms         78.7 ms            8
+scheduling/fibonacci/29        132 ms          121 ms            5
+scheduling/fibonacci/30        200 ms          197 ms            3
+scheduling/fibonacci/31        279 ms          273 ms            4
+scheduling/fibonacci/32        427 ms          426 ms            2
+scheduling/fibonacci/33        658 ms          658 ms            1
+scheduling/fibonacci/34       1079 ms         1011 ms            1
+scheduling/fibonacci/35       1661 ms         1578 ms            1
+taskflow/fibonacci/25         65.3 ms         56.4 ms           10
+taskflow/fibonacci/26          106 ms         94.1 ms            8
+taskflow/fibonacci/27          180 ms          163 ms            5
+taskflow/fibonacci/28          291 ms          263 ms            3
+taskflow/fibonacci/29          468 ms          427 ms            2
+taskflow/fibonacci/30          998 ms          605 ms            1
+taskflow/fibonacci/31         1765 ms         1083 ms            1
+taskflow/fibonacci/32         3755 ms         2678 ms            1
+taskflow/fibonacci/33         6827 ms         5083 ms            1
+taskflow/fibonacci/34        11034 ms         8153 ms            1
+taskflow/fibonacci/35        15058 ms        10284 ms            1
 ```
 
 ## Linear chain
@@ -344,18 +351,18 @@ Below is a sample output of Google Benchmark:
 ---------------------------------------------------------------------------
 Benchmark                                 Time             CPU   Iterations
 ---------------------------------------------------------------------------
-scheduling/linear_chain/1048576         156 ms          116 ms            5
-scheduling/linear_chain/2097152         297 ms          229 ms            3
-scheduling/linear_chain/4194304         519 ms          391 ms            2
-scheduling/linear_chain/8388608        1064 ms          828 ms            1
-scheduling/linear_chain/16777216       2173 ms         1688 ms            1
-scheduling/linear_chain/33554432       4431 ms         3453 ms            1
-taskflow/linear_chain/1048576           158 ms          125 ms            6
-taskflow/linear_chain/2097152           314 ms          258 ms            2
-taskflow/linear_chain/4194304           875 ms          750 ms            1
-taskflow/linear_chain/8388608          1748 ms         1531 ms            1
-taskflow/linear_chain/16777216         3714 ms         3219 ms            1
-taskflow/linear_chain/33554432         8137 ms         7219 ms            1
+scheduling/linear_chain/1048576         125 ms          104 ms            7
+scheduling/linear_chain/2097152         250 ms          208 ms            3
+scheduling/linear_chain/4194304         495 ms          411 ms            2
+scheduling/linear_chain/8388608        1024 ms          856 ms            1
+scheduling/linear_chain/16777216       2100 ms         1689 ms            1
+scheduling/linear_chain/33554432       4158 ms         3486 ms            1
+taskflow/linear_chain/1048576           190 ms          152 ms            5
+taskflow/linear_chain/2097152           496 ms          420 ms            2
+taskflow/linear_chain/4194304          1101 ms          950 ms            1
+taskflow/linear_chain/8388608          2449 ms         2145 ms            1
+taskflow/linear_chain/16777216         5090 ms         4484 ms            1
+taskflow/linear_chain/33554432         9951 ms         8685 ms            1
 ```
 
 ## Matrix multiplication
@@ -376,16 +383,16 @@ Below is a sample output of Google Benchmark:
 --------------------------------------------------------------------------------
 Benchmark                                      Time             CPU   Iterations
 --------------------------------------------------------------------------------
-scheduling/matrix_multiplication/128        2.22 ms        0.719 ms         1000
-scheduling/matrix_multiplication/256        11.1 ms        0.969 ms         1000
-scheduling/matrix_multiplication/512         102 ms         1.41 ms          100
-scheduling/matrix_multiplication/1024        961 ms         1.56 ms           10
-scheduling/matrix_multiplication/2048      10461 ms         15.6 ms            1
-taskflow/matrix_multiplication/128          1.88 ms        0.393 ms         1948
-taskflow/matrix_multiplication/256          11.6 ms        0.732 ms          640
-taskflow/matrix_multiplication/512           100 ms        0.938 ms          100
-taskflow/matrix_multiplication/1024          960 ms         9.38 ms           10
-taskflow/matrix_multiplication/2048        10443 ms         31.2 ms            1
+scheduling/matrix_multiplication/128        2.78 ms         1.55 ms          444
+scheduling/matrix_multiplication/256        8.20 ms         2.12 ms          333
+scheduling/matrix_multiplication/512        25.8 ms         3.36 ms          100
+scheduling/matrix_multiplication/1024        522 ms         4.22 ms           10
+scheduling/matrix_multiplication/2048       4134 ms         11.9 ms            1
+taskflow/matrix_multiplication/128          2.34 ms         1.49 ms          472
+taskflow/matrix_multiplication/256          4.13 ms         1.62 ms          433
+taskflow/matrix_multiplication/512          19.0 ms         2.71 ms          270
+taskflow/matrix_multiplication/1024          408 ms         7.88 ms           10
+taskflow/matrix_multiplication/2048         3970 ms         29.5 ms            1
 ```
 
 # Implementation details
