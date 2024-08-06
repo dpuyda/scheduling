@@ -105,7 +105,7 @@ void Benchmark(benchmark::State& state) {
 
 BENCHMARK(taskflow::benchmarks::fibonacci::Benchmark)
     ->Name("taskflow/fibonacci")
-    ->DenseRange(25, 33)
+    ->DenseRange(25, 35)
     ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(taskflow::benchmarks::linear_chain::Benchmark)
