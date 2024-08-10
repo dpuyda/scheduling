@@ -20,7 +20,7 @@ option(SCHEDULING_ENABLE_MEMORY_SANITIZER "Defines if memory sanitizer should be
 option(SCHEDULING_ENABLE_THREAD_SANITIZER "Defines if thread sanitizer should be enabled" OFF)
 option(SCHEDULING_ENABLE_UNDEFINED_BEHAVIOR_SANITIZER "Defines if undefined behavior sanitizer should be enabled" OFF)
 
-cmake_dependent_option(SCHEDULING_BUILD_TASKFLOW_BENCHMARK
+cmake_dependent_option(SCHEDULING_BUILD_TASKFLOW_BENCHMARKS
   "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "SCHEDULING_BUILD_BENCHMARKS" OFF
 )
 
