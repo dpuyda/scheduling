@@ -191,12 +191,12 @@ is_completed.wait(false);
 ## Wait until a predicate is satisfied
 
 Under certain scenarios, you might need to block the current thread and execute
-submitted tasks in a loop until a specified condition is met. For example, this
-may happen when you submit tasks recursively and a task cannot complete until
-some other tasks are completed. In this case, all worker threads may get blocked
-by tasks that are waiting for other tasks to complete. To keep executing tasks
-while waiting until a specified condition is met, use the `Wait` overload
-accepting a predicate.
+submitted tasks in a loop until a specific condition is met. For example, this
+can happen when tasks are submitted recursively, and a task cannot complete
+until other tasks have finished. In such cases, all worker threads may become
+blocked by tasks waiting for other tasks to complete. To continue executing
+tasks while waiting for a condition to be satisfied, use the Wait overload that
+accepts a predicate.
 
 For example, below is a recursive function to calculate Fibonacci numbers
 without memoization used in the benchmarks:
@@ -220,6 +220,10 @@ int Fibonacci(ThreadPool& thread_pool, const int n) {
   return a + b;
 }
 ```
+
+> [!WARNING]  
+> If `Wait` is called recursively, e.g., as shown in the example above, the
+> stack depth can be exceeded.
 
 ## Define dependencies between task groups
 
