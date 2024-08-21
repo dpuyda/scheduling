@@ -11,6 +11,13 @@ endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# For GCC 12 and above, disable the warning about std::hardware_destructive_interference_size not being ABI-stable.
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-interference-size")
+  endif()
+endif()
+
 option(SCHEDULING_BUILD_BENCHMARKS "Build benchmarks" ${PROJECT_IS_TOP_LEVEL})
 option(SCHEDULING_BUILD_DOCS "Build documentation" ${PROJECT_IS_TOP_LEVEL})
 option(SCHEDULING_BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
