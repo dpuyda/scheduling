@@ -222,8 +222,8 @@ int Fibonacci(ThreadPool& thread_pool, const int n) {
 ```
 
 > [!WARNING]  
-> If `Wait` is called recursively, e.g., as shown in the example above, the
-> stack depth can be exceeded.
+> Beware of recursion! If `Wait` is called recursively, e.g., as shown in the
+> example above, the stack depth can be exceeded.
 
 ## Define dependencies between task groups
 
