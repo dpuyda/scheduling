@@ -15,7 +15,7 @@ Scheduling is developed with simplicity and performance in mind.
     * [Run async tasks](#run-async-tasks)
     * [Build task graphs](#build-task-graphs)
     * [Wait until a specific task is completed](#wait-until-a-specific-task-is-completed)
-    * [Wait until a predicate is satisfied](#wait-until-a-predicate-is-satisfied)
+    * [Wait until a condition is satisfied](#wait-until-a-condition-is-satisfied)
     * [Define dependencies between task groups](#define-dependencies-between-task-groups)
     * [Cancel a task](#cancel-a-task)
     * [Resubmit a task graph](#resubmit-a-task-graph)
@@ -188,7 +188,7 @@ thread_pool.Submit([&] {
 is_completed.wait(false);
 ```
 
-## Wait until a predicate is satisfied
+## Wait until a condition is satisfied
 
 Under certain scenarios, you might need to block the current thread and execute
 submitted tasks in a loop until a specific condition is met. For example, this
@@ -273,7 +273,7 @@ simultaneously from different threads.
 We compare Scheduling with [Taskflow](https://github.com/taskflow/taskflow),
 a highly optimized library for parallel and heterogeneous programming
 [[1]](#1), [[2]](#2). We use [Google Benchmark](https://github.com/google/benchmark)
-for benchmarking. Comparison of Taskflow with popular libraries for async
+for benchmarking. Comparison of Taskflow and popular libraries for async
 programming can be found in Taskflow documentation.
 
 We measure the total time needed to create and execute tasks. The benchmarks
@@ -296,8 +296,8 @@ of Taskflow.
 
 ## Fibonacci numbers
 
-To benchmark running async tasks using the `ThreadPool` class, we use the
-Taskflow [example](https://github.com/taskflow/taskflow/blob/9616467dd6e6f47f38c6aa39508fd51bf487b876/examples/fibonacci.cpp)
+To benchmark running a large number of async tasks using the `ThreadPool` class,
+we use the Taskflow [example](https://github.com/taskflow/taskflow/blob/9616467dd6e6f47f38c6aa39508fd51bf487b876/examples/fibonacci.cpp)
 to calculate Fibonacci numbers recursively without memoization.
 
 The charts below demonstrate comparison between the two libraries:
