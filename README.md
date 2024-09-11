@@ -34,6 +34,7 @@ Below are some GitHub projects related to thread pools and task graphs in which
 you may be interested:
 
 * [Taskflow](https://github.com/taskflow/taskflow)
+* [enkiTS](https://github.com/dougbinks/enkiTS)
 * [CGraph](https://github.com/ChunelFeng/CGraph)
 * https://github.com/bshoshany/thread-pool
 * https://github.com/DeveloperPaul123/thread-pool
@@ -44,10 +45,36 @@ We start with examples demonstrating how to run async tasks and task graphs.
 
 ## Add Scheduling to your project
 
-To add Scheduling to your project, you can use CMake. For example:
+When using CMake 3.11 or newer, you can add Scheduling to your project using
+`FetchContent`. For example:
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+  scheduling
+  GIT_REPOSITORY https://github.com/dpuyda/scheduling
+  GIT_TAG main
+  GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(scheduling)
+```
+
+Alternatively, you can add Scheduling as a subdirectory. For example:
+```cmake
+add_subdirectory(scheduling)
+```
+
+Then, link Scheduling to your target. For example:
 ```cmake
 target_link_libraries(${PROJECT_NAME} PRIVATE scheduling)
 ```
+
+> [!NOTE]  
+To build Scheduling, you need C++20 or newer. For example:
+>```cmake
+>set(CMAKE_CXX_STANDARD 20)
+>```
 
 ## Run async tasks
 
