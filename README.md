@@ -24,7 +24,7 @@ Scheduling is developed with simplicity and performance in mind.
     * [Linear chain](#linear-chain)
     * [Matrix multiplication](#matrix-multiplication)
 * [Implementation details](#implementation-details)
-    * [Thread pool](#thread-pool)
+    * [Chase-Lev deque](#chase-lev-deque)
     * [Tasks](#tasks)
 * [License](#license)
     * [Third-party licenses](#third-party-licenses)
@@ -45,8 +45,13 @@ We start with examples demonstrating how to run async tasks and task graphs.
 
 ## Add Scheduling to your project
 
-When using CMake 3.11 or newer, you can add Scheduling to your project using
-`FetchContent`. For example:
+To add Scheduling to your project, you can use CMake. To build Scheduling from
+source, you need C++20 or newer. For example:
+```cmake
+set(CMAKE_CXX_STANDARD 20)
+```
+
+When using CMake 3.11 or newer, you can use `FetchContent`. For example:
 ```cmake
 include(FetchContent)
 
@@ -69,12 +74,6 @@ Then, link Scheduling to your target. For example:
 ```cmake
 target_link_libraries(${PROJECT_NAME} PRIVATE scheduling)
 ```
-
-> [!NOTE]  
-To build Scheduling, you need C++20 or newer. For example:
->```cmake
->set(CMAKE_CXX_STANDARD 20)
->```
 
 ## Run async tasks
 
@@ -432,6 +431,8 @@ In this section, we briefly describe some implementation details of the
 Scheduling library.
 
 ## Chase-Lev deque
+
+Scheduling employs a simple thread pool based on work-stealing queues.
 
 The idea of work-stealing queues is to provide each worker thread with its own task queue to reduce
 thread contention [[3]](#3). When a task is submitted, it is pushed to one of the queues. The thread
