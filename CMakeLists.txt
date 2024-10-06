@@ -47,10 +47,7 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 if (BUILD_SHARED_LIBS)
-  target_compile_definitions(${PROJECT_NAME}
-    PUBLIC
-    SCHEDULING_SHARED_LIBRARY
-  )
+  message(WARNING "Scheduling does not support dynamic linking.")
 endif()
 
 if (SCHEDULING_BUILD_BENCHMARKS)

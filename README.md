@@ -75,6 +75,10 @@ Then, link Scheduling to your target. For example:
 target_link_libraries(${PROJECT_NAME} PRIVATE scheduling)
 ```
 
+> [!NOTE]  
+> Because of the use of thread-local variables, Scheduling does not support
+> dynamic linking.
+
 ## Run async tasks
 
 To run async tasks, create a `ThreadPool` instance. For example:
@@ -132,22 +136,18 @@ Add elements to `tasks`. For example, add tasks to calculate the value of
 int a, b, c, d;
 
 auto& get_a = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   a = 1;
 });
 
 auto& get_b = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   b = 2;
 });
 
 auto& get_c = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   c = 3;
 });
 
 auto& get_d = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   d = 4;
 });
 ```
@@ -156,12 +156,10 @@ Next, add tasks to calculate `a + b` and `c + d`:
 int sum_ab, sum_cd;
 
 auto& get_sum_ab = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   sum_ab = a + b;
 });
 
 auto& get_sum_cd = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   sum_cd = c + d;
 });
 ```
@@ -170,7 +168,6 @@ Finally, add the task to calculate the product `(a + b) * (c + d)`:
 int product;
 
 auto& get_product = tasks.emplace_back([&] {
-  std::this_thread::sleep_for(std::chrono::seconds(1));
   product = sum_ab * sum_cd;
 });
 ```

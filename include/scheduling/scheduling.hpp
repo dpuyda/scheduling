@@ -20,27 +20,6 @@
 #include <thread>
 #include <vector>
 
-#if defined(_MSC_VER)
-#define SCHEDULING_EXPORT __declspec(dllexport)
-#define SCHEDULING_IMPORT __declspec(dllimport)
-#elif defined(__GNUC__) || defined(__clang__)
-#define SCHEDULING_EXPORT __attribute__((visibility("default")))
-#define SCHEDULING_IMPORT
-#else
-#define SCHEDULING_EXPORT
-#define SCHEDULING_IMPORT
-#endif
-
-#ifdef SCHEDULING_SHARED_LIBRARY
-#ifdef SCHEDULING_LIBRARY
-#define SCHEDULING_API SCHEDULING_EXPORT
-#else
-#define SCHEDULING_API SCHEDULING_IMPORT
-#endif
-#else
-#define SCHEDULING_API
-#endif
-
 namespace scheduling {
 namespace internal {
 constexpr auto kCancelled = 1;
@@ -234,7 +213,7 @@ class WorkStealingDeque {
  * Dependencies between tasks define the order in which the tasks should be
  * executed.
  */
-class SCHEDULING_API Task {
+class Task {
  public:
   /**
    * \brief Creates an empty task.
@@ -385,7 +364,7 @@ class SCHEDULING_API Task {
  * The threads, managed by the thread pool, execute tasks in a work-stealing
  * manner.
  */
-class SCHEDULING_API ThreadPool {
+class ThreadPool {
  public:
   /**
    * \brief Creates a `ThreadPool` instance.
