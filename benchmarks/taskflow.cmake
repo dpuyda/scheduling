@@ -15,7 +15,7 @@ file(WRITE "${TASKFLOW_DOWNLOAD_DIR}/CMakeLists.txt"
   project(taskflow-download CXX)
   ExternalProject_Add(taskflow-download
     GIT_REPOSITORY https://github.com/taskflow/taskflow.git
-    GIT_TAG master
+    GIT_TAG v3.7.0
     GIT_SHALLOW 1
     SOURCE_DIR \"${TASKFLOW_SRC_DIR}\"
     BINARY_DIR \"${TASKFLOW_BUILD_DIR}\"
