@@ -127,7 +127,13 @@ example:
 std::vector<scheduling::Task> tasks;
 ```
 The `Task` instances should not be destroyed or reallocated until their
-execution is completed by `ThreadPool`.
+execution is completed by `ThreadPool`. When using `std::vector`, it may be
+convenient to [reserve](https://en.cppreference.com/w/cpp/container/vector/reserve)
+enough space to prevent storage reallocation. Assume we are going to
+add seven tasks:
+```cpp
+tasks.reserve(7);
+```
 
 Add elements to `tasks`. For example, add tasks to calculate the value of
 `(a + b) * (c + d)` asynchronously. First, add tasks to get the values of `a`,
