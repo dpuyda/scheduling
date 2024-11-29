@@ -36,6 +36,7 @@ you may be interested:
 * [Taskflow](https://github.com/taskflow/taskflow)
 * [enkiTS](https://github.com/dougbinks/enkiTS)
 * [CGraph](https://github.com/ChunelFeng/CGraph)
+* [libfork](https://github.com/ConorWilliams/libfork)
 * https://github.com/bshoshany/thread-pool
 * https://github.com/DeveloperPaul123/thread-pool
 
