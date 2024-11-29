@@ -5,7 +5,7 @@
 [![Build](https://github.com/dpuyda/scheduling/actions/workflows/build.yml/badge.svg)](https://github.com/dpuyda/scheduling/actions/workflows/build.yml)
 [![arXiv:2407.15805](https://img.shields.io/badge/arXiv-2407.15805-b31b1b)](https://arxiv.org/abs/2407.15805)
 
-Scheduling is a simple, minimalistic and fast library allowing you to run async
+Scheduling is a simple, minimalistic and fast header-only library allowing you to run async
 tasks and task graphs.
 
 Scheduling is developed with simplicity and performance in mind.
@@ -471,10 +471,7 @@ Concurrent push and pop operations are not allowed in most implementations of th
 deque. To ensure that there are no concurrent push and pop operations, mappings from thread ID to
 queue indices are typically used. When a task is pushed to or popped from a queue, the correct queue
 is usually found using the current thread ID. Unlike this typical approach, the solution suggested
-in this paper uses a thread-local variable to find the correct task queue. It makes the solution not
-header-only, but this will not matter once modules from the C++20 standard are used. Unfortunately,
-at the time of writing this paper, there seems to be not enough compiler support to present the
-suggested solution in the form of a cross-platform module.
+in this paper uses a thread-local variable to find the correct task queue.
 
 ## Task graphs
 

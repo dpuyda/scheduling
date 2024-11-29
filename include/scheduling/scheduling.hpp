@@ -566,4 +566,6 @@ class ThreadPool {
   std::vector<std::thread> threads_;
   std::vector<internal::WorkStealingDeque<Task*>> queues_;
 };
+
+inline thread_local unsigned ThreadPool::index_{0};
 }  // namespace scheduling

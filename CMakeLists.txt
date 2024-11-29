@@ -31,19 +31,12 @@ cmake_dependent_option(SCHEDULING_BUILD_TASKFLOW_BENCHMARKS
   "Build taskflow benchmark" ${PROJECT_IS_TOP_LEVEL} "SCHEDULING_BUILD_BENCHMARKS" OFF
 )
 
-add_library(${PROJECT_NAME}
-  include/scheduling/scheduling.hpp
-  src/scheduling.cpp
-)
+add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME}
-  PUBLIC
-  include
-)
-
-target_compile_definitions(${PROJECT_NAME}
-  PRIVATE
-  SCHEDULING_LIBRARY
+  INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 if (BUILD_SHARED_LIBS)
